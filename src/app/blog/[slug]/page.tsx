@@ -9,7 +9,8 @@ type Props = { params: Promise<{ slug: string }> };
 
 export async function generateMetadata({ params }: Props): Promise<Metadata> {
   const { slug } = await params;
-  const post = await getPostBySlug(slug);
+  let post: Awaited<ReturnType<typeof getPostBySlug>> = null;
+  try { post = await getPostBySlug(slug); } catch { /* DB not ready */ }
   if (!post) return { title: "Post Not Found" };
 
   const baseUrl = process.env.NEXT_PUBLIC_APP_URL || "https://overmcp.com";
@@ -121,12 +122,16 @@ function formatInline(text: string): React.ReactNode {
 
 export default async function BlogPostPage({ params }: Props) {
   const { slug } = await params;
-  const post = await getPostBySlug(slug);
+  let post: Awaited<ReturnType<typeof getPostBySlug>> = null;
+  try { post = await getPostBySlug(slug); } catch { /* DB not ready */ }
 
   if (!post) notFound();
 
-  const allPosts = await getAllPosts(10);
-  const related = allPosts.filter((p) => p.slug !== post.slug).slice(0, 3);
+  let related: Awaited<ReturnType<typeof getAllPosts>> = [];
+  try {
+    const allPosts = await getAllPosts(10);
+    related = allPosts.filter((p) => p.slug !== post.slug).slice(0, 3);
+  } catch { /* ignore */ }
 
   const jsonLd = {
     "@context": "https://schema.org",

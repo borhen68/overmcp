@@ -10,7 +10,12 @@ export const metadata: Metadata = {
 export const dynamic = "force-dynamic";
 
 export default async function BlogPage() {
-  const posts = await getAllPosts();
+  let posts: Awaited<ReturnType<typeof getAllPosts>> = [];
+  try {
+    posts = await getAllPosts();
+  } catch {
+    // DB not ready yet
+  }
 
   return (
     <div className="relative min-h-screen bg-grid noise">
