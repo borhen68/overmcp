@@ -73,6 +73,7 @@ export default function Home() {
           <nav className="hidden md:flex items-center gap-8 text-sm text-gray-400">
             <a href="#features" className="hover:text-white transition-colors">Features</a>
             <a href="#pricing" className="hover:text-white transition-colors">Pricing</a>
+            <a href="/blog" className="hover:text-white transition-colors">Blog</a>
             <a href="/monitor" className="hover:text-white transition-colors">Monitoring</a>
             <a href="/connect" className="hover:text-white transition-colors">Connect</a>
           </nav>
@@ -608,8 +609,9 @@ export default function Home() {
             <div>
               <h4 className="font-medium text-sm text-gray-300 mb-3">Resources</h4>
               <ul className="space-y-2 text-sm text-gray-500">
-                <li><a href="/llms.txt" className="hover:text-white transition-colors">llms.txt</a></li>
-                <li><a href="/sitemap.xml" className="hover:text-white transition-colors">Sitemap</a></li>
+                <li><a href="/blog" className="hover:text-white transition-colors">Blog</a></li>
+                <li><a href="/terms" className="hover:text-white transition-colors">Terms of Service</a></li>
+                <li><a href="/privacy" className="hover:text-white transition-colors">Privacy Policy</a></li>
               </ul>
             </div>
           </div>
