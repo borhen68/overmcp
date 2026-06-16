@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { verifyWebhookSignature } from "@/lib/payments";
-import { updateScan } from "@/lib/store";
+import { updateScan, getScan, getScanWithDB } from "@/lib/store";
+import { sendPaymentConfirmation } from "@/lib/email";
 
 export async function POST(request: NextRequest) {
   try {
@@ -18,7 +19,23 @@ export async function POST(request: NextRequest) {
       payload.payment_status === "confirmed"
     ) {
       const scanId = payload.order_id;
-      updateScan(scanId, { paid: true, paymentId: payload.payment_id });
+
+      // Make sure scan is loaded
+      let scan = getScan(scanId);
+      if (!scan) {
+        scan = await getScanWithDB(scanId);
+      }
+
+      if (scan) {
+        updateScan(scanId, {
+          paid: true,
+          paymentId: String(payload.payment_id),
+        });
+
+        if (scan.email) {
+          sendPaymentConfirmation(scan.email, scanId, scan.tier).catch(() => {});
+        }
+      }
     }
 
     return NextResponse.json({ ok: true });

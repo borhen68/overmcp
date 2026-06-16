@@ -37,6 +37,7 @@ export async function POST(request: NextRequest) {
       createdAt: new Date().toISOString(),
       status: "scanning",
       paid: false,
+      tier: "free",
       files,
     });
 

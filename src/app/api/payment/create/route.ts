@@ -2,11 +2,19 @@ import { NextRequest, NextResponse } from "next/server";
 import { createPayment } from "@/lib/payments";
 import { getScan, updateScan } from "@/lib/store";
 
-const PRICE_USD = 9;
+const TIER_PRICES: Record<string, number> = {
+  fix: 9,
+  deploy: 29,
+};
+
+const TIER_DESCRIPTIONS: Record<string, string> = {
+  fix: "OverMCP — Full Report + Fixed Code + AEO",
+  deploy: "OverMCP — Full Report + Auto-Fix + Deploy + Continuous Monitoring",
+};
 
 export async function POST(request: NextRequest) {
   try {
-    const { scanId } = await request.json();
+    const { scanId, tier = "fix" } = await request.json();
 
     const scan = getScan(scanId);
     if (!scan) {
@@ -17,9 +25,11 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: "Already paid" }, { status: 400 });
     }
 
-    const payment = await createPayment(scanId, PRICE_USD);
+    const price = TIER_PRICES[tier] || TIER_PRICES.fix;
+    const payment = await createPayment(scanId, price);
 
     updateScan(scanId, {
+      tier: tier as "fix" | "deploy",
       paymentId: payment.payment_id,
       invoiceUrl: payment.invoice_url,
     });
@@ -27,7 +37,9 @@ export async function POST(request: NextRequest) {
     return NextResponse.json({
       invoiceUrl: payment.invoice_url,
       paymentId: payment.payment_id,
-      amount: PRICE_USD,
+      amount: price,
+      tier,
+      description: TIER_DESCRIPTIONS[tier] || TIER_DESCRIPTIONS.fix,
     });
   } catch (error: unknown) {
     const message = error instanceof Error ? error.message : "Payment creation failed";

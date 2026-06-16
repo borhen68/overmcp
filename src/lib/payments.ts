@@ -1,4 +1,4 @@
-import axios from "axios";
+import http from "./http";
 
 const NOWPAYMENTS_API = "https://api.nowpayments.io/v1";
 
@@ -16,13 +16,13 @@ export async function createPayment(
   orderId: string,
   priceUsd: number
 ): Promise<CreatePaymentResponse> {
-  const response = await axios.post(
+  const response = await http.post(
     `${NOWPAYMENTS_API}/invoice`,
     {
       price_amount: priceUsd,
       price_currency: "usd",
       order_id: orderId,
-      order_description: "VibeSecure - Full Security & SEO Report",
+      order_description: "OverMCP - Full Security & SEO Report",
       ipn_callback_url: `${process.env.NEXT_PUBLIC_APP_URL}/api/payment/webhook`,
       success_url: `${process.env.NEXT_PUBLIC_APP_URL}/report/${orderId}?paid=true`,
       cancel_url: `${process.env.NEXT_PUBLIC_APP_URL}/report/${orderId}?paid=false`,
@@ -39,7 +39,7 @@ export async function createPayment(
 }
 
 export async function verifyPayment(paymentId: string): Promise<boolean> {
-  const response = await axios.get(
+  const response = await http.get(
     `${NOWPAYMENTS_API}/payment/${paymentId}`,
     {
       headers: {

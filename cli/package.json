@@ -1,0 +1,29 @@
+{
+  "name": "overmcp",
+  "version": "0.1.0",
+  "description": "Pre-deploy guardrail — catch leaked secrets before they reach a public repo or production.",
+  "type": "module",
+  "bin": {
+    "overmcp": "index.mjs"
+  },
+  "files": [
+    "index.mjs",
+    "scanner.mjs",
+    "README.md"
+  ],
+  "engines": {
+    "node": ">=18"
+  },
+  "keywords": [
+    "security",
+    "secrets",
+    "scanner",
+    "pre-commit",
+    "ci",
+    "leaked-credentials",
+    "devsecops",
+    "overmcp"
+  ],
+  "license": "MIT",
+  "dependencies": {}
+}

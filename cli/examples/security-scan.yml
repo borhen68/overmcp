@@ -1,0 +1,23 @@
+# Copy this file to .github/workflows/security-scan.yml in your repo.
+# It blocks pull requests and pushes when leaked secrets are detected.
+name: Security Scan
+on:
+  push:
+  pull_request:
+
+jobs:
+  overmcp:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "20"
+      # Option A: use the published CLI directly
+      - name: OverMCP scan
+        run: npx --yes overmcp@latest . --fail-on high
+
+      # Option B: use the composite action instead (uncomment)
+      # - uses: your-org/overmcp/cli@main
+      #   with:
+      #     fail-on: high
