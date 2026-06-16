@@ -17,14 +17,20 @@ async function handleGenerate(req: NextRequest) {
     try {
       const post = await generateBlogPost();
       if (post) posts.push({ id: post.id, slug: post.slug, title: post.title });
-    } catch (e) {
-      const msg = e instanceof Error ? e.message : String(e);
+    } catch (e: unknown) {
+      const msg = e instanceof Error ? `${e.message} | ${e.cause ? String(e.cause) : "no cause"} | ${e.stack?.split("\n")[1] || ""}` : String(e);
       console.error(`Blog generation ${i + 1} failed:`, msg);
       errors.push(msg);
     }
   }
 
-  return NextResponse.json({ generated: posts.length, posts, errors });
+  const envCheck = {
+    hasDeepseek: !!process.env.DEEPSEEK_API_KEY,
+    hasTursoUrl: !!process.env.TURSO_DATABASE_URL,
+    hasTursoToken: !!process.env.TURSO_AUTH_TOKEN,
+  };
+
+  return NextResponse.json({ generated: posts.length, posts, errors, envCheck });
 }
 
 export async function GET(req: NextRequest) {
