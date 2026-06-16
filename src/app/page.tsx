@@ -157,18 +157,18 @@ export default function Home() {
             {/* Stats */}
             <div className="flex items-center justify-center gap-12 mb-16">
               <div className="text-center">
+                <p className="text-3xl font-bold text-white">89%</p>
+                <p className="text-sm text-gray-500">of AI-built apps have vulnerabilities</p>
+              </div>
+              <div className="w-px h-12 bg-gray-800" />
+              <div className="text-center">
                 <p className="text-3xl font-bold text-white">9</p>
-                <p className="text-sm text-gray-500">security modules</p>
+                <p className="text-sm text-gray-500">security modules in every scan</p>
               </div>
               <div className="w-px h-12 bg-gray-800" />
               <div className="text-center">
-                <p className="text-3xl font-bold text-white">30s</p>
-                <p className="text-sm text-gray-500">average scan time</p>
-              </div>
-              <div className="w-px h-12 bg-gray-800" />
-              <div className="text-center">
-                <p className="text-3xl font-bold text-white">1-click</p>
-                <p className="text-sm text-gray-500">fix & deploy</p>
+                <p className="text-3xl font-bold text-white">&lt; 60s</p>
+                <p className="text-sm text-gray-500">to find what hackers already see</p>
               </div>
             </div>
           </motion.div>

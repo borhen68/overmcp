@@ -824,23 +824,22 @@ export default function ReportPage() {
               </p>
             </div>
 
-            <div className="grid md:grid-cols-2 gap-6 max-w-3xl mx-auto">
-              {/* Fix tier */}
+            <div className="grid md:grid-cols-3 gap-6 max-w-5xl mx-auto">
+              {/* Quick Fix tier */}
               <div className="glass-strong rounded-2xl p-7 flex flex-col relative overflow-hidden">
                 <div className="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-transparent via-white/10 to-transparent" />
-                <h4 className="font-bold text-xl mb-1">Fix</h4>
+                <h4 className="font-bold text-xl mb-1">Quick Fix</h4>
                 <div className="flex items-baseline gap-1 mb-1">
                   <span className="text-4xl font-black">$9</span>
                   <span className="text-sm text-gray-500">in crypto</span>
                 </div>
-                <p className="text-sm text-gray-500 mb-6">See everything. Fix it yourself.</p>
+                <p className="text-sm text-gray-500 mb-6">Full vulnerability report with AI-generated fix code for every issue</p>
                 <ul className="text-sm text-gray-300 space-y-3 mb-8 flex-1">
                   {[
-                    `All ${data.totalVulnerabilities || totalIssues} vulnerabilities detailed`,
-                    "File, line number & fixed code",
-                    "SEO + AI visibility action plan",
-                    "Ready-to-deploy llms.txt & schema",
-                    "Auto-fix PR on GitHub",
+                    "Full report with all vulnerabilities",
+                    "AI-generated fix code",
+                    "SEO & performance scores",
+                    "Export as PDF/Markdown",
                   ].map((f, i) => (
                     <li key={i} className="flex items-start gap-2.5">
                       <svg className="w-4 h-4 text-green-400 mt-0.5 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor">
@@ -851,7 +850,7 @@ export default function ReportPage() {
                   ))}
                 </ul>
                 <button
-                  onClick={() => handlePayment("fix")}
+                  onClick={() => handlePayment("quick-fix")}
                   disabled={paying}
                   className="w-full py-4 rounded-xl font-bold text-white bg-white/5 border border-white/15 hover:bg-white/10 hover:border-white/25 disabled:opacity-50 transition-all"
                 >
@@ -859,25 +858,26 @@ export default function ReportPage() {
                 </button>
               </div>
 
-              {/* Deploy tier — highlighted */}
+              {/* Deep Scan tier — highlighted */}
               <div className="relative rounded-2xl p-7 pt-9 flex flex-col" style={{ background: "linear-gradient(135deg, rgba(16,185,129,0.06) 0%, rgba(16,185,129,0.02) 100%)", border: "1px solid rgba(16,185,129,0.25)" }}>
                 <div className="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-green-500 via-emerald-400 to-green-500 rounded-t-2xl" />
                 <div className="absolute top-2 right-5 px-3 py-1 bg-gradient-to-r from-green-500 to-emerald-600 rounded-full text-[11px] font-bold text-white shadow-lg shadow-emerald-500/30 uppercase tracking-wide">
                   Most Popular
                 </div>
-                <h4 className="font-bold text-xl mb-1">Deploy</h4>
+                <h4 className="font-bold text-xl mb-1">Deep Scan</h4>
                 <div className="flex items-baseline gap-1 mb-1">
                   <span className="text-4xl font-black text-green-400">$29</span>
                   <span className="text-sm text-gray-500">in crypto</span>
                 </div>
-                <p className="text-sm text-gray-500 mb-6">We fix and deploy it for you.</p>
+                <p className="text-sm text-gray-500 mb-6">Everything in Quick Fix plus deeper analysis and priority support</p>
                 <ul className="text-sm text-gray-300 space-y-3 mb-8 flex-1">
                   {[
-                    "Everything in Fix, plus:",
-                    "Auto-deploy fixed version live",
-                    "llms.txt + schema deployed",
-                    "AI visibility boost applied",
-                    "Free rescan in 7 days",
+                    "Everything in Quick Fix",
+                    "Dependency CVE scanning",
+                    "Secret leak detection",
+                    "Accessibility audit",
+                    "AI security chat",
+                    "Priority email support",
                   ].map((f, i) => (
                     <li key={i} className="flex items-start gap-2.5">
                       <svg className="w-4 h-4 text-emerald-400 mt-0.5 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor">
@@ -888,11 +888,45 @@ export default function ReportPage() {
                   ))}
                 </ul>
                 <button
-                  onClick={() => handlePayment("deploy")}
+                  onClick={() => handlePayment("deep-scan")}
                   disabled={paying}
                   className="w-full py-4 rounded-xl font-bold text-white bg-gradient-to-r from-green-500 to-emerald-600 hover:from-green-400 hover:to-emerald-500 shadow-lg shadow-emerald-500/25 disabled:opacity-50 transition-all active:scale-[0.98]"
                 >
-                  {paying ? "Redirecting..." : "Fix & Deploy — $29"}
+                  {paying ? "Redirecting..." : "Deep Scan — $29"}
+                </button>
+              </div>
+
+              {/* Continuous tier */}
+              <div className="glass-strong rounded-2xl p-7 flex flex-col relative overflow-hidden">
+                <div className="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-transparent via-white/10 to-transparent" />
+                <h4 className="font-bold text-xl mb-1">Continuous</h4>
+                <div className="flex items-baseline gap-1 mb-1">
+                  <span className="text-4xl font-black">$49</span>
+                  <span className="text-sm text-gray-500">/month</span>
+                </div>
+                <p className="text-sm text-gray-500 mb-6">Daily monitoring with instant alerts when new vulnerabilities appear</p>
+                <ul className="text-sm text-gray-300 space-y-3 mb-8 flex-1">
+                  {[
+                    "Everything in Deep Scan",
+                    "Daily automated rescans",
+                    "Instant email alerts",
+                    "Trust badge for your site",
+                    "Monitoring dashboard",
+                  ].map((f, i) => (
+                    <li key={i} className="flex items-start gap-2.5">
+                      <svg className="w-4 h-4 text-green-400 mt-0.5 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M4.5 12.75l6 6 9-13.5" />
+                      </svg>
+                      {f}
+                    </li>
+                  ))}
+                </ul>
+                <button
+                  onClick={() => handlePayment("continuous")}
+                  disabled={paying}
+                  className="w-full py-4 rounded-xl font-bold text-white bg-white/5 border border-white/15 hover:bg-white/10 hover:border-white/25 disabled:opacity-50 transition-all"
+                >
+                  {paying ? "Redirecting..." : "Start Monitoring — $49/mo"}
                 </button>
               </div>
             </div>
