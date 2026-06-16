@@ -1,4 +1,3 @@
-import { getAllPosts } from "@/lib/blog";
 import Link from "next/link";
 import type { Metadata } from "next";
 
@@ -9,13 +8,17 @@ export const metadata: Metadata = {
 
 export const dynamic = "force-dynamic";
 
-export default async function BlogPage() {
-  let posts: Awaited<ReturnType<typeof getAllPosts>> = [];
+async function loadPosts() {
   try {
-    posts = await getAllPosts();
+    const { getAllPosts } = await import("@/lib/blog");
+    return await getAllPosts();
   } catch {
-    // DB not ready yet
+    return [];
   }
+}
+
+export default async function BlogPage() {
+  const posts = await loadPosts();
 
   return (
     <div className="relative min-h-screen bg-grid noise">
