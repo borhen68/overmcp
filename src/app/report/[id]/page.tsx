@@ -860,10 +860,10 @@ export default function ReportPage() {
               </div>
 
               {/* Deploy tier — highlighted */}
-              <div className="relative rounded-2xl p-7 flex flex-col overflow-hidden" style={{ background: "linear-gradient(135deg, rgba(16,185,129,0.06) 0%, rgba(16,185,129,0.02) 100%)", border: "1px solid rgba(16,185,129,0.25)" }}>
-                <div className="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-green-500 via-emerald-400 to-green-500" />
-                <div className="absolute -top-3 right-6 px-3 py-1.5 bg-gradient-to-r from-green-500 to-emerald-600 rounded-full text-xs font-bold text-white shadow-lg shadow-emerald-500/30">
-                  POPULAR
+              <div className="relative rounded-2xl p-7 pt-9 flex flex-col" style={{ background: "linear-gradient(135deg, rgba(16,185,129,0.06) 0%, rgba(16,185,129,0.02) 100%)", border: "1px solid rgba(16,185,129,0.25)" }}>
+                <div className="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-green-500 via-emerald-400 to-green-500 rounded-t-2xl" />
+                <div className="absolute top-2 right-5 px-3 py-1 bg-gradient-to-r from-green-500 to-emerald-600 rounded-full text-[11px] font-bold text-white shadow-lg shadow-emerald-500/30 uppercase tracking-wide">
+                  Most Popular
                 </div>
                 <h4 className="font-bold text-xl mb-1">Deploy</h4>
                 <div className="flex items-baseline gap-1 mb-1">
