@@ -1,10 +1,10 @@
-import { createClient, type Client } from "@libsql/client";
+import { createClient, type Client } from "@libsql/client/web";
 
 let _db: Client | null = null;
 function getDb(): Client {
   if (!_db) {
     _db = createClient({
-      url: process.env.TURSO_DATABASE_URL || "file:local.db",
+      url: process.env.TURSO_DATABASE_URL || "libsql://localhost",
       authToken: process.env.TURSO_AUTH_TOKEN || undefined,
     });
   }
