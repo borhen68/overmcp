@@ -3,6 +3,10 @@
     {
       "path": "/api/monitor/run",
       "schedule": "0 8 * * *"
+    },
+    {
+      "path": "/api/blog/generate?count=2",
+      "schedule": "0 6 * * *"
     }
   ]
 }
