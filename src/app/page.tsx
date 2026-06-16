@@ -4,6 +4,8 @@ import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { motion } from "framer-motion";
 import Logo from "./components/Logo";
+import LanguageSwitcher from "./components/LanguageSwitcher";
+import { useTranslation } from "@/lib/i18n";
 
 export default function Home() {
   const router = useRouter();
@@ -11,11 +13,12 @@ export default function Home() {
   const [scanning, setScanning] = useState(false);
   const [error, setError] = useState("");
   const [mobileNav, setMobileNav] = useState(false);
+  const { t, lang, setLang } = useTranslation();
 
   const handleScan = async () => {
     const url = inputUrl.trim();
     if (!url) {
-      setError("Paste your website URL or GitHub repo link");
+      setError(t("scan.error"));
       return;
     }
 
@@ -72,18 +75,19 @@ export default function Home() {
             <Logo markClass="w-8 h-8" textClass="text-lg" />
           </a>
           <nav className="hidden md:flex items-center gap-8 text-sm text-gray-400">
-            <a href="#features" className="hover:text-white transition-colors">Features</a>
-            <a href="#pricing" className="hover:text-white transition-colors">Pricing</a>
-            <a href="/tools/headers" className="hover:text-white transition-colors">Free Tools</a>
-            <a href="/blog" className="hover:text-white transition-colors">Blog</a>
-            <a href="/monitor" className="hover:text-white transition-colors">Monitoring</a>
+            <a href="#features" className="hover:text-white transition-colors">{t("nav.features")}</a>
+            <a href="#pricing" className="hover:text-white transition-colors">{t("nav.pricing")}</a>
+            <a href="/tools/headers" className="hover:text-white transition-colors">{t("nav.freeTools")}</a>
+            <a href="/blog" className="hover:text-white transition-colors">{t("nav.blog")}</a>
+            <a href="/monitor" className="hover:text-white transition-colors">{t("nav.monitoring")}</a>
           </nav>
           <div className="flex items-center gap-3">
+            <LanguageSwitcher lang={lang} setLang={setLang} />
             <a
               href="#scan"
               className="hidden sm:inline-block px-4 py-2 text-sm font-semibold rounded-lg bg-gradient-to-r from-green-500 to-emerald-600 hover:from-green-400 hover:to-emerald-500 text-white shadow-lg shadow-emerald-500/20 transition-all active:scale-95"
             >
-              Scan free
+              {t("nav.scanFree")}
             </a>
             <button
               onClick={() => setMobileNav(!mobileNav)}
@@ -110,17 +114,17 @@ export default function Home() {
           className="md:hidden sticky top-16 z-40 border-b border-white/5 backdrop-blur-xl bg-[#030712]/90"
         >
           <nav className="flex flex-col px-6 py-4 gap-3 text-sm text-gray-400">
-            <a href="#features" onClick={() => setMobileNav(false)} className="hover:text-white py-1">Features</a>
-            <a href="#pricing" onClick={() => setMobileNav(false)} className="hover:text-white py-1">Pricing</a>
-            <a href="/tools/headers" className="hover:text-white py-1">Free Tools</a>
-            <a href="/blog" className="hover:text-white py-1">Blog</a>
-            <a href="/monitor" className="hover:text-white py-1">Monitoring</a>
+            <a href="#features" onClick={() => setMobileNav(false)} className="hover:text-white py-1">{t("nav.features")}</a>
+            <a href="#pricing" onClick={() => setMobileNav(false)} className="hover:text-white py-1">{t("nav.pricing")}</a>
+            <a href="/tools/headers" className="hover:text-white py-1">{t("nav.freeTools")}</a>
+            <a href="/blog" className="hover:text-white py-1">{t("nav.blog")}</a>
+            <a href="/monitor" className="hover:text-white py-1">{t("nav.monitoring")}</a>
             <a
               href="#scan"
               onClick={() => setMobileNav(false)}
               className="mt-2 px-4 py-2.5 text-center text-sm font-semibold rounded-lg bg-gradient-to-r from-green-500 to-emerald-600 text-white"
             >
-              Scan free
+              {t("nav.scanFree")}
             </a>
           </nav>
         </motion.div>
@@ -138,37 +142,36 @@ export default function Home() {
             {/* Badge */}
             <div className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-green-500/10 border border-green-500/20 text-green-400 text-sm font-medium mb-8">
               <span className="w-2 h-2 rounded-full bg-green-400 pulse-ring" />
-              Free scan · No login · Results in 30s
+              {t("hero.badge")}
             </div>
 
             <h1 className="text-5xl md:text-7xl font-bold leading-[1.1] tracking-tight mb-6">
-              Your AI-built app
+              {t("hero.title.line1")}
               <br />
               <span className="bg-gradient-to-r from-red-400 via-orange-400 to-yellow-400 bg-clip-text text-transparent">
-                is not secure
+                {t("hero.title.line2")}
               </span>
             </h1>
 
             <p className="text-xl text-gray-400 max-w-2xl mx-auto leading-relaxed mb-12">
-              Built with Cursor, Bolt, v0, or Lovable? We find every vulnerability,
-              fix your code, and deploy the secured version — in one click.
+              {t("hero.subtitle")}
             </p>
 
             {/* Stats */}
             <div className="flex items-center justify-center gap-12 mb-16">
               <div className="text-center">
                 <p className="text-3xl font-bold text-white">89%</p>
-                <p className="text-sm text-gray-500">of AI-built apps have vulnerabilities</p>
+                <p className="text-sm text-gray-500">{t("stats.vulnerabilities")}</p>
               </div>
               <div className="w-px h-12 bg-gray-800" />
               <div className="text-center">
                 <p className="text-3xl font-bold text-white">9</p>
-                <p className="text-sm text-gray-500">security modules in every scan</p>
+                <p className="text-sm text-gray-500">{t("stats.modules")}</p>
               </div>
               <div className="w-px h-12 bg-gray-800" />
               <div className="text-center">
                 <p className="text-3xl font-bold text-white">&lt; 60s</p>
-                <p className="text-sm text-gray-500">to find what hackers already see</p>
+                <p className="text-sm text-gray-500">{t("stats.time")}</p>
               </div>
             </div>
           </motion.div>
@@ -184,7 +187,7 @@ export default function Home() {
             <div className="gradient-border p-8 rounded-2xl">
               {/* URL Input */}
               <label className="text-sm text-gray-400 font-medium block mb-3">
-                Paste any URL — your live site or GitHub repo
+                {t("scan.label")}
               </label>
               <div className="flex gap-3">
                 <div className="flex-1 relative">
@@ -198,7 +201,7 @@ export default function Home() {
                     value={inputUrl}
                     onChange={(e) => { setInputUrl(e.target.value); setError(""); }}
                     onKeyDown={(e) => e.key === "Enter" && handleScan()}
-                    placeholder="myapp.vercel.app or github.com/user/repo"
+                    placeholder={t("scan.placeholder")}
                     className="w-full pl-12 pr-4 py-4 bg-white/5 border border-white/10 rounded-xl text-white placeholder-gray-600 focus:outline-none focus:border-green-500/50 focus:ring-1 focus:ring-green-500/20 transition-all text-base"
                   />
                 </div>
@@ -213,7 +216,7 @@ export default function Home() {
                       <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z" />
                     </svg>
                   ) : (
-                    "Scan Free"
+                    t("hero.scanButton")
                   )}
                 </button>
               </div>
@@ -223,17 +226,17 @@ export default function Home() {
               )}
 
               <p className="mt-4 text-xs text-gray-600">
-                Works with any live site (Vercel, Netlify, Cloudflare, Railway) or public GitHub repo.
-                For private repos,{" "}
+                {t("scan.note")}
+                {" "}
                 <a href="/connect" className="text-green-400/80 hover:text-green-400 transition-colors">
-                  connect your platform
+                  {t("scan.private")}
                 </a>.
               </p>
 
               {/* Divider */}
               <div className="flex items-center gap-4 my-7">
                 <div className="flex-1 h-px bg-white/5" />
-                <span className="text-xs text-gray-600 uppercase tracking-wider">or connect for auto-deploy</span>
+                <span className="text-xs text-gray-600 uppercase tracking-wider">{t("scan.divider")}</span>
                 <div className="flex-1 h-px bg-white/5" />
               </div>
 
@@ -264,7 +267,7 @@ export default function Home() {
             </div>
 
             <p className="text-center text-xs text-gray-600 mt-5">
-              Free scan shows a summary. Full report + auto-fix from $9 in crypto.
+              {t("scan.footer")}
             </p>
           </motion.div>
         </section>
@@ -279,10 +282,10 @@ export default function Home() {
             className="text-center mb-16"
           >
             <h2 className="text-3xl md:text-4xl font-bold mb-4">
-              Everything to secure your app
+              {t("features.title")}
             </h2>
             <p className="text-gray-400 max-w-xl mx-auto">
-              From vulnerability detection to one-click deployment of the fixed version.
+              {t("features.subtitle")}
             </p>
           </motion.div>
 
@@ -413,15 +416,15 @@ export default function Home() {
             className="text-center mb-16"
           >
             <h2 className="text-3xl md:text-4xl font-bold mb-4">
-              Three steps to a secure app
+              {t("howItWorks.title")}
             </h2>
           </motion.div>
 
           <div className="grid md:grid-cols-3 gap-8 max-w-4xl mx-auto">
             {[
-              { step: "01", title: "Paste Any URL", desc: "Drop any live site or GitHub repo — we crawl it instantly, no login needed." },
-              { step: "02", title: "AI Scans Everything", desc: "Security, SEO, AEO, performance, and dependency CVEs — all analyzed in parallel." },
-              { step: "03", title: "Fix & Deploy", desc: "Pay with crypto. We fix the code and deploy to Vercel, Netlify, or open a PR." },
+              { step: "01", title: t("howItWorks.step1.title"), desc: t("howItWorks.step1.desc") },
+              { step: "02", title: t("howItWorks.step2.title"), desc: t("howItWorks.step2.desc") },
+              { step: "03", title: t("howItWorks.step3.title"), desc: t("howItWorks.step3.desc") },
             ].map((item, i) => (
               <motion.div
                 key={i}
@@ -449,9 +452,9 @@ export default function Home() {
             className="text-center mb-16"
           >
             <h2 className="text-3xl md:text-4xl font-bold mb-4">
-              Simple pricing, pay with crypto
+              {t("pricing.title")}
             </h2>
-            <p className="text-gray-400">No subscriptions. No credit card. Just crypto.</p>
+            <p className="text-gray-400">{t("pricing.subtitle")}</p>
           </motion.div>
 
           <div className="grid md:grid-cols-3 gap-6 max-w-5xl mx-auto">
@@ -495,7 +498,7 @@ export default function Home() {
               >
                 {plan.highlight && (
                   <div className="absolute -top-3 left-1/2 -translate-x-1/2 px-3 py-1 bg-gradient-to-r from-green-500 to-emerald-600 rounded-full text-xs font-medium">
-                    Most Popular
+                    {t("pricing.mostPopular")}
                   </div>
                 )}
                 <h3 className="font-semibold text-lg mb-1">{plan.name}</h3>
@@ -538,10 +541,10 @@ export default function Home() {
             className="text-center"
           >
             <h2 className="text-3xl md:text-4xl font-bold mb-6">
-              Don&apos;t ship vulnerable code
+              {t("cta.title")}
             </h2>
             <p className="text-gray-400 mb-8 max-w-lg mx-auto">
-              Your users trust you with their data. Make sure your vibe-coded app deserves that trust.
+              {t("cta.subtitle")}
             </p>
             <a
               href="#"
@@ -551,7 +554,7 @@ export default function Home() {
               }}
               className="inline-flex items-center gap-2 px-8 py-4 rounded-xl font-semibold bg-gradient-to-r from-green-500 to-emerald-600 hover:from-green-400 hover:to-emerald-500 text-white shadow-lg shadow-green-500/25 transition-all hover:scale-105 active:scale-95"
             >
-              Scan Your App Now
+              {t("cta.button")}
               <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 7l5 5m0 0l-5 5m5-5H6" />
               </svg>
@@ -628,40 +631,40 @@ export default function Home() {
             <div>
               <Logo className="mb-3" markClass="w-7 h-7" textClass="text-base" />
               <p className="text-sm text-gray-500 leading-relaxed">
-                AI-powered security scanner for apps built with Cursor, Bolt, v0, Lovable, and other AI coding tools.
+                {t("footer.description")}
               </p>
             </div>
             <div>
-              <h4 className="font-medium text-sm text-gray-300 mb-3">Product</h4>
+              <h4 className="font-medium text-sm text-gray-300 mb-3">{t("footer.product")}</h4>
               <ul className="space-y-2 text-sm text-gray-500">
-                <li><a href="#features" className="hover:text-white transition-colors">Features</a></li>
-                <li><a href="#pricing" className="hover:text-white transition-colors">Pricing</a></li>
-                <li><a href="/monitor" className="hover:text-white transition-colors">Monitoring</a></li>
-                <li><a href="/badge" className="hover:text-white transition-colors">Trust Badge</a></li>
+                <li><a href="#features" className="hover:text-white transition-colors">{t("nav.features")}</a></li>
+                <li><a href="#pricing" className="hover:text-white transition-colors">{t("nav.pricing")}</a></li>
+                <li><a href="/monitor" className="hover:text-white transition-colors">{t("nav.monitoring")}</a></li>
+                <li><a href="/badge" className="hover:text-white transition-colors">{t("footer.trustBadge")}</a></li>
               </ul>
             </div>
             <div>
-              <h4 className="font-medium text-sm text-gray-300 mb-3">Free Tools</h4>
+              <h4 className="font-medium text-sm text-gray-300 mb-3">{t("footer.freeTools")}</h4>
               <ul className="space-y-2 text-sm text-gray-500">
-                <li><a href="/tools/headers" className="hover:text-white transition-colors">Headers Checker</a></li>
-                <li><a href="/tools/ssl" className="hover:text-white transition-colors">SSL Checker</a></li>
-                <li><a href="/tools/leak" className="hover:text-white transition-colors">Secret Leak Scanner</a></li>
+                <li><a href="/tools/headers" className="hover:text-white transition-colors">{t("footer.headersChecker")}</a></li>
+                <li><a href="/tools/ssl" className="hover:text-white transition-colors">{t("footer.sslChecker")}</a></li>
+                <li><a href="/tools/leak" className="hover:text-white transition-colors">{t("footer.secretLeakScanner")}</a></li>
               </ul>
             </div>
             <div>
-              <h4 className="font-medium text-sm text-gray-300 mb-3">Resources</h4>
+              <h4 className="font-medium text-sm text-gray-300 mb-3">{t("footer.resources")}</h4>
               <ul className="space-y-2 text-sm text-gray-500">
-                <li><a href="/blog" className="hover:text-white transition-colors">Blog</a></li>
-                <li><a href="/terms" className="hover:text-white transition-colors">Terms of Service</a></li>
-                <li><a href="/privacy" className="hover:text-white transition-colors">Privacy Policy</a></li>
+                <li><a href="/blog" className="hover:text-white transition-colors">{t("footer.blog")}</a></li>
+                <li><a href="/terms" className="hover:text-white transition-colors">{t("footer.terms")}</a></li>
+                <li><a href="/privacy" className="hover:text-white transition-colors">{t("footer.privacy")}</a></li>
               </ul>
             </div>
           </div>
           <div className="pt-6 border-t border-white/5 flex flex-col md:flex-row items-center justify-between gap-4">
             <p className="text-xs text-gray-600">
-              &copy; {new Date().getFullYear()} OverMCP. Secure your AI-built apps.
+              &copy; {new Date().getFullYear()} OverMCP. {t("footer.copyright")}
             </p>
-            <span className="text-xs text-gray-600">Accepts BTC, ETH, USDT &amp; 100+ cryptocurrencies</span>
+            <span className="text-xs text-gray-600">{t("footer.crypto")}</span>
           </div>
         </div>
       </footer>
