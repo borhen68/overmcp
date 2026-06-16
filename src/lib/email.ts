@@ -19,7 +19,7 @@ export async function sendReportReady(to: string, scanId: string, url: string, s
   const reportUrl = `${appUrl}/report/${scanId}`;
 
   await sendEmail({
-    from: "OverMCP <reports@overmcp.app>",
+    from: "OverMCP <reports@overmcp.com>",
     to,
     subject: `🛡️ Your scan is ready — ${summary.critical + summary.high} critical issues found`,
     html: `
@@ -66,7 +66,7 @@ export async function sendPaymentConfirmation(to: string, scanId: string, tier: 
   const reportUrl = `${appUrl}/report/${scanId}`;
 
   await sendEmail({
-    from: "OverMCP <reports@overmcp.app>",
+    from: "OverMCP <reports@overmcp.com>",
     to,
     subject: `✅ Payment confirmed — your full report is unlocked`,
     html: `
@@ -124,7 +124,7 @@ export async function sendMonitorAlert(args: {
     .join("");
 
   await sendEmail({
-    from: "OverMCP <alerts@overmcp.app>",
+    from: "OverMCP <alerts@overmcp.com>",
     to: args.to,
     subject,
     html: `
@@ -163,7 +163,7 @@ export async function sendRescanAlert(to: string, scanId: string, url: string, n
   const reportUrl = `${appUrl}/report/${scanId}`;
 
   await sendEmail({
-    from: "OverMCP <alerts@overmcp.app>",
+    from: "OverMCP <alerts@overmcp.com>",
     to,
     subject: newIssues > 0
       ? `⚠️ ${newIssues} new vulnerabilities found on ${url}`
