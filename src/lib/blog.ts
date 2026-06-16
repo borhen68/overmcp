@@ -1,12 +1,24 @@
 import db from "./db";
-import OpenAI from "openai";
 
-const client = new OpenAI({
-  baseURL: "https://api.deepseek.com",
-  apiKey: process.env.DEEPSEEK_API_KEY,
-  timeout: 90_000,
-  maxRetries: 2,
-});
+async function callDeepSeek(messages: { role: string; content: string }[], maxTokens = 4000) {
+  const res = await fetch("https://api.deepseek.com/chat/completions", {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json",
+      "Authorization": `Bearer ${process.env.DEEPSEEK_API_KEY}`,
+    },
+    body: JSON.stringify({
+      model: "deepseek-chat",
+      messages,
+      temperature: 0.8,
+      response_format: { type: "json_object" },
+      max_tokens: maxTokens,
+    }),
+  });
+  if (!res.ok) throw new Error(`DeepSeek API error: ${res.status}`);
+  const data = await res.json();
+  return data.choices[0]?.message?.content || null;
+}
 
 export async function initBlogTable() {
   await db.execute(`
@@ -131,12 +143,10 @@ export async function generateBlogPost(): Promise<BlogPost | null> {
     ? topicPool[Math.floor(Math.random() * topicPool.length)]
     : null;
 
-  const response = await client.chat.completions.create({
-    model: "deepseek-chat",
-    messages: [
-      {
-        role: "system",
-        content: `You are an expert technical content writer for OverMCP (overmcp.com), a security scanning platform for "vibe-coded" apps — apps built quickly with AI coding tools like Cursor, Bolt.new, v0, Lovable, Replit Agent, etc.
+  const content = await callDeepSeek([
+    {
+      role: "system",
+      content: `You are an expert technical content writer for OverMCP (overmcp.com), a security scanning platform for "vibe-coded" apps — apps built quickly with AI coding tools like Cursor, Bolt.new, v0, Lovable, Replit Agent, etc.
 
 Your audience: indie developers, solopreneurs, and makers who ship fast with AI but often skip security.
 
@@ -161,20 +171,14 @@ Return valid JSON:
   "metaTitle": "string (under 60 chars, includes primary keyword)",
   "metaDescription": "string (under 155 chars, includes CTA)"
 }`,
-      },
-      {
-        role: "user",
-        content: suggestedTopic
-          ? `Write a blog post about: ${suggestedTopic}`
-          : `Write a blog post about a fresh security topic relevant to vibe-coded apps that hasn't been covered yet.`,
-      },
-    ],
-    temperature: 0.8,
-    response_format: { type: "json_object" },
-    max_tokens: 4000,
-  });
-
-  const content = response.choices[0]?.message?.content;
+    },
+    {
+      role: "user",
+      content: suggestedTopic
+        ? `Write a blog post about: ${suggestedTopic}`
+        : `Write a blog post about a fresh security topic relevant to vibe-coded apps that hasn't been covered yet.`,
+    },
+  ]);
   if (!content) return null;
 
   const post = JSON.parse(content);
