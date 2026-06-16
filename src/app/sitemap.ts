@@ -1,16 +1,23 @@
 import { MetadataRoute } from "next";
 import { getAllPosts } from "@/lib/blog";
 
+export const dynamic = "force-dynamic";
+
 export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
   const baseUrl = process.env.NEXT_PUBLIC_APP_URL || "https://overmcp.com";
 
-  const posts = await getAllPosts();
-  const blogEntries = posts.map((post) => ({
-    url: `${baseUrl}/blog/${post.slug}`,
-    lastModified: new Date(post.publishedAt),
-    changeFrequency: "monthly" as const,
-    priority: 0.7,
-  }));
+  let blogEntries: MetadataRoute.Sitemap = [];
+  try {
+    const posts = await getAllPosts();
+    blogEntries = posts.map((post) => ({
+      url: `${baseUrl}/blog/${post.slug}`,
+      lastModified: new Date(post.publishedAt),
+      changeFrequency: "monthly" as const,
+      priority: 0.7,
+    }));
+  } catch {
+    // Table may not exist yet on first deploy
+  }
 
   return [
     {
