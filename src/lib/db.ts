@@ -1,8 +1,22 @@
-import { createClient } from "@libsql/client";
+import { createClient, type Client } from "@libsql/client";
 
-const db = createClient({
-  url: process.env.TURSO_DATABASE_URL || "file:local.db",
-  authToken: process.env.TURSO_AUTH_TOKEN || undefined,
+let _db: Client | null = null;
+function getDb(): Client {
+  if (!_db) {
+    _db = createClient({
+      url: process.env.TURSO_DATABASE_URL || "file:local.db",
+      authToken: process.env.TURSO_AUTH_TOKEN || undefined,
+    });
+  }
+  return _db;
+}
+
+const db = new Proxy({} as Client, {
+  get(_, prop) {
+    const client = getDb();
+    const val = (client as any)[prop];
+    return typeof val === "function" ? val.bind(client) : val;
+  },
 });
 
 export async function initDB() {
