@@ -12,16 +12,19 @@ async function handleGenerate(req: NextRequest) {
   const count = parseInt(req.nextUrl.searchParams.get("count") || "2");
   const posts = [];
 
+  const errors: string[] = [];
   for (let i = 0; i < Math.min(count, 5); i++) {
     try {
       const post = await generateBlogPost();
       if (post) posts.push({ id: post.id, slug: post.slug, title: post.title });
     } catch (e) {
-      console.error(`Blog generation ${i + 1} failed:`, e);
+      const msg = e instanceof Error ? e.message : String(e);
+      console.error(`Blog generation ${i + 1} failed:`, msg);
+      errors.push(msg);
     }
   }
 
-  return NextResponse.json({ generated: posts.length, posts });
+  return NextResponse.json({ generated: posts.length, posts, errors });
 }
 
 export async function GET(req: NextRequest) {
