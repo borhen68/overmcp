@@ -2,6 +2,10 @@ import { NextResponse } from "next/server";
 import { getAllPosts } from "@/lib/blog";
 
 export async function GET() {
-  const posts = await getAllPosts();
-  return NextResponse.json(posts);
+  try {
+    const posts = await getAllPosts();
+    return NextResponse.json(posts);
+  } catch {
+    return NextResponse.json([]);
+  }
 }

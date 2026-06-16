@@ -1,24 +1,28 @@
+"use client";
+
 import Link from "next/link";
-import type { Metadata } from "next";
+import { useEffect, useState } from "react";
 
-export const metadata: Metadata = {
-  title: "Blog — Security Tips for Vibe-Coded Apps | OverMCP",
-  description: "Learn how to secure apps built with AI coding tools. Security tips, vulnerability guides, and best practices for Cursor, Bolt, v0, and Lovable developers.",
-};
-
-export const dynamic = "force-dynamic";
-
-async function loadPosts() {
-  try {
-    const { getAllPosts } = await import("@/lib/blog");
-    return await getAllPosts();
-  } catch {
-    return [];
-  }
+interface BlogPost {
+  id: string;
+  slug: string;
+  title: string;
+  excerpt: string;
+  tags: string[];
+  publishedAt: string;
 }
 
-export default async function BlogPage() {
-  const posts = await loadPosts();
+export default function BlogPage() {
+  const [posts, setPosts] = useState<BlogPost[]>([]);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    fetch("/api/blog")
+      .then((r) => r.json())
+      .then((data) => setPosts(data))
+      .catch(() => setPosts([]))
+      .finally(() => setLoading(false));
+  }, []);
 
   return (
     <div className="relative min-h-screen bg-grid noise">
@@ -47,7 +51,11 @@ export default async function BlogPage() {
           </p>
         </div>
 
-        {posts.length === 0 ? (
+        {loading ? (
+          <div className="text-center py-20">
+            <div className="w-6 h-6 border-2 border-green-400/30 border-t-green-400 rounded-full animate-spin mx-auto" />
+          </div>
+        ) : posts.length === 0 ? (
           <div className="text-center py-20">
             <p className="text-gray-500 text-lg">First posts coming soon...</p>
           </div>
