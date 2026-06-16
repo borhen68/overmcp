@@ -4,9 +4,11 @@ import { useEffect, useState, useRef } from "react";
 import { useParams, useSearchParams } from "next/navigation";
 import { motion, AnimatePresence } from "framer-motion";
 import Logo from "../../components/Logo";
+import AttackSimulation from "../../components/AttackSimulation";
 
 interface ScanData {
   id: string;
+  url?: string;
   status: "scanning" | "done" | "error";
   paid: boolean;
   tier?: string;
@@ -263,6 +265,7 @@ export default function ReportPage() {
   const [chatLoading, setChatLoading] = useState(false);
   const [rescanning, setRescanning] = useState(false);
   const [activeTab, setActiveTab] = useState("vulnerabilities");
+  const [showAttackSim, setShowAttackSim] = useState(false);
   const repoParam = searchParams.get("repo");
   const platform = searchParams.get("platform");
   const projectName = searchParams.get("project");
@@ -688,6 +691,55 @@ export default function ReportPage() {
                 </div>
               )}
             </motion.div>
+          )}
+
+          {/* === ATTACK SIMULATION CTA === */}
+          {(totalIssues > 0 || leaks > 0) && (
+            <motion.div
+              initial={{ y: 20, opacity: 0 }}
+              animate={{ y: 0, opacity: 1 }}
+              transition={{ delay: 0.65 }}
+              className="mb-8"
+            >
+              <button
+                onClick={() => setShowAttackSim(true)}
+                className="w-full group relative overflow-hidden rounded-2xl p-6 border border-red-500/20 text-left transition-all hover:border-red-500/40"
+                style={{ background: "linear-gradient(135deg, rgba(239,68,68,0.05) 0%, rgba(249,115,22,0.03) 100%)" }}
+              >
+                <div className="absolute top-0 right-0 w-40 h-40 bg-red-500/5 rounded-full blur-3xl group-hover:bg-red-500/10 transition-colors" />
+                <div className="relative flex items-center gap-4">
+                  <div className="w-12 h-12 rounded-xl bg-red-500/10 border border-red-500/20 flex items-center justify-center shrink-0 group-hover:bg-red-500/20 transition-colors">
+                    <svg className="w-6 h-6 text-red-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M6.75 7.5l3 2.25-3 2.25m4.5 0h3m-9 8.25h13.5A2.25 2.25 0 0021 18V6a2.25 2.25 0 00-2.25-2.25H5.25A2.25 2.25 0 003 6v12a2.25 2.25 0 002.25 2.25z" />
+                    </svg>
+                  </div>
+                  <div className="flex-1">
+                    <h4 className="font-bold text-white text-lg group-hover:text-red-100 transition-colors">
+                      See how you&apos;d get hacked
+                    </h4>
+                    <p className="text-sm text-gray-400 mt-0.5">
+                      Watch a live simulation of your site being exploited — using your actual scan data
+                    </p>
+                  </div>
+                  <div className="shrink-0">
+                    <svg className="w-5 h-5 text-gray-500 group-hover:text-red-400 group-hover:translate-x-1 transition-all" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13.5 4.5L21 12m0 0l-7.5 7.5M21 12H3" />
+                    </svg>
+                  </div>
+                </div>
+              </button>
+            </motion.div>
+          )}
+
+          {/* Attack Simulation Modal */}
+          {showAttackSim && (
+            <AttackSimulation
+              url={data.url || `https://${id}.example.com`}
+              vulnerabilities={data.preview?.map(p => ({ ...p, line: undefined })) || []}
+              secrets={data.secrets?.leaks?.map(l => ({ type: l.type, file: l.file, snippet: l.snippet, severity: l.severity })) || []}
+              onClose={() => setShowAttackSim(false)}
+              onUnlock={() => { setShowAttackSim(false); handlePayment("fix"); }}
+            />
           )}
 
           {/* === WHAT YOU GET — Value proposition === */}
