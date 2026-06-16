@@ -1,15 +1,30 @@
 import { NextRequest, NextResponse } from "next/server";
 import OpenAI from "openai";
+import { rateLimit } from "@/lib/rate-limit";
 
-const client = new OpenAI({
-  baseURL: "https://api.deepseek.com",
-  apiKey: process.env.DEEPSEEK_API_KEY,
-  timeout: 30_000,
-  maxRetries: 1,
-});
+let _client: OpenAI | null = null;
+function getClient() {
+  if (!_client) {
+    _client = new OpenAI({
+      baseURL: "https://api.deepseek.com",
+      apiKey: process.env.DEEPSEEK_API_KEY,
+      timeout: 30_000,
+      maxRetries: 1,
+    });
+  }
+  return _client;
+}
 
 export async function POST(req: NextRequest) {
   try {
+    const ip = req.headers.get("x-forwarded-for")?.split(",")[0]?.trim()
+      || req.headers.get("x-real-ip")
+      || "unknown";
+    const { allowed } = rateLimit(ip, 3, 60 * 60 * 1000);
+    if (!allowed) {
+      return NextResponse.json({ error: "Rate limit exceeded" }, { status: 429 });
+    }
+
     const { url, vulnerabilities, secrets } = await req.json();
 
     if (!url) {
@@ -34,7 +49,7 @@ export async function POST(req: NextRequest) {
       )
       .join("\n");
 
-    const response = await client.chat.completions.create({
+    const response = await getClient().chat.completions.create({
       model: "deepseek-chat",
       messages: [
         {

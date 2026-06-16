@@ -2,12 +2,18 @@ import { NextRequest, NextResponse } from "next/server";
 import { getScan, getScanWithDB } from "@/lib/store";
 import OpenAI from "openai";
 
-const deepseek = new OpenAI({
-  baseURL: "https://api.deepseek.com",
-  apiKey: process.env.DEEPSEEK_API_KEY,
-  timeout: 45_000,
-  maxRetries: 1,
-});
+let _deepseek: OpenAI | null = null;
+function getDeepseek() {
+  if (!_deepseek) {
+    _deepseek = new OpenAI({
+      baseURL: "https://api.deepseek.com",
+      apiKey: process.env.DEEPSEEK_API_KEY,
+      timeout: 45_000,
+      maxRetries: 1,
+    });
+  }
+  return _deepseek;
+}
 
 export async function POST(request: NextRequest) {
   try {
@@ -32,7 +38,7 @@ export async function POST(request: NextRequest) {
 
     const context = buildContext(scan);
 
-    const response = await deepseek.chat.completions.create({
+    const response = await getDeepseek().chat.completions.create({
       model: "deepseek-chat",
       messages: [
         {

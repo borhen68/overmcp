@@ -59,7 +59,7 @@ OverMCP is a SaaS tool that accepts any URL (live website or GitHub repo), crawl
 
 ## Contact
 
-Website: https://overmcp.app
+Website: https://overmcp.com
 `;
 
   return new NextResponse(content, {

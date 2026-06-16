@@ -60,8 +60,8 @@ export default function TermsPage() {
         <h2>6. Changes</h2>
         <p>
           We may update these Terms. Continued use after changes constitutes acceptance. Contact:{" "}
-          <a className="text-emerald-400 hover:underline" href="mailto:support@overmcp.app">
-            support@overmcp.app
+          <a className="text-emerald-400 hover:underline" href="mailto:support@overmcp.com">
+            support@overmcp.com
           </a>
           .
         </p>

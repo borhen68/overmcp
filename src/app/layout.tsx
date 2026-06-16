@@ -12,7 +12,7 @@ const geistMono = Geist_Mono({
   subsets: ["latin"],
 });
 
-const baseUrl = process.env.NEXT_PUBLIC_APP_URL || "https://overmcp.app";
+const baseUrl = process.env.NEXT_PUBLIC_APP_URL || "https://overmcp.com";
 
 export const metadata: Metadata = {
   title: {

@@ -55,8 +55,8 @@ export default function PrivacyPage() {
         <h2>5. Your rights & contact</h2>
         <p>
           To request access or deletion of your data, contact{" "}
-          <a className="text-emerald-400 hover:underline" href="mailto:privacy@overmcp.app">
-            privacy@overmcp.app
+          <a className="text-emerald-400 hover:underline" href="mailto:privacy@overmcp.com">
+            privacy@overmcp.com
           </a>
           .
         </p>
