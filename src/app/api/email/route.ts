@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { getScan, updateScan } from "@/lib/store";
+import { sendReportReady } from "@/lib/email";
 
 export async function POST(request: NextRequest) {
   try {
@@ -15,6 +16,10 @@ export async function POST(request: NextRequest) {
     }
 
     updateScan(scanId, { email });
+
+    if (scan.status === "done" && scan.result?.summary) {
+      await sendReportReady(email, scanId, scan.url || "", scan.result.summary);
+    }
 
     return NextResponse.json({ ok: true });
   } catch (error: unknown) {
