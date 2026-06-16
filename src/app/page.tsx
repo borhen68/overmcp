@@ -74,9 +74,9 @@ export default function Home() {
           <nav className="hidden md:flex items-center gap-8 text-sm text-gray-400">
             <a href="#features" className="hover:text-white transition-colors">Features</a>
             <a href="#pricing" className="hover:text-white transition-colors">Pricing</a>
+            <a href="/tools/headers" className="hover:text-white transition-colors">Free Tools</a>
             <a href="/blog" className="hover:text-white transition-colors">Blog</a>
             <a href="/monitor" className="hover:text-white transition-colors">Monitoring</a>
-            <a href="/connect" className="hover:text-white transition-colors">Connect</a>
           </nav>
           <div className="flex items-center gap-3">
             <a
@@ -112,9 +112,9 @@ export default function Home() {
           <nav className="flex flex-col px-6 py-4 gap-3 text-sm text-gray-400">
             <a href="#features" onClick={() => setMobileNav(false)} className="hover:text-white py-1">Features</a>
             <a href="#pricing" onClick={() => setMobileNav(false)} className="hover:text-white py-1">Pricing</a>
+            <a href="/tools/headers" className="hover:text-white py-1">Free Tools</a>
             <a href="/blog" className="hover:text-white py-1">Blog</a>
             <a href="/monitor" className="hover:text-white py-1">Monitoring</a>
-            <a href="/connect" className="hover:text-white py-1">Connect</a>
             <a
               href="#scan"
               onClick={() => setMobileNav(false)}
@@ -624,7 +624,7 @@ export default function Home() {
       {/* Footer */}
       <footer className="relative z-10 border-t border-white/5 py-12">
         <div className="max-w-7xl mx-auto px-6">
-          <div className="grid md:grid-cols-3 gap-8 mb-8">
+          <div className="grid md:grid-cols-4 gap-8 mb-8">
             <div>
               <Logo className="mb-3" markClass="w-7 h-7" textClass="text-base" />
               <p className="text-sm text-gray-500 leading-relaxed">
@@ -637,7 +637,15 @@ export default function Home() {
                 <li><a href="#features" className="hover:text-white transition-colors">Features</a></li>
                 <li><a href="#pricing" className="hover:text-white transition-colors">Pricing</a></li>
                 <li><a href="/monitor" className="hover:text-white transition-colors">Monitoring</a></li>
-                <li><a href="/connect" className="hover:text-white transition-colors">Connect Platform</a></li>
+                <li><a href="/badge" className="hover:text-white transition-colors">Trust Badge</a></li>
+              </ul>
+            </div>
+            <div>
+              <h4 className="font-medium text-sm text-gray-300 mb-3">Free Tools</h4>
+              <ul className="space-y-2 text-sm text-gray-500">
+                <li><a href="/tools/headers" className="hover:text-white transition-colors">Headers Checker</a></li>
+                <li><a href="/tools/ssl" className="hover:text-white transition-colors">SSL Checker</a></li>
+                <li><a href="/tools/leak" className="hover:text-white transition-colors">Secret Leak Scanner</a></li>
               </ul>
             </div>
             <div>

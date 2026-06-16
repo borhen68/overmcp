@@ -138,7 +138,12 @@ export default function LeakScannerPage() {
           </div>
         )}
 
-        <div className="mt-16 text-center card p-8">
+        <div className="mt-12 flex flex-wrap justify-center gap-4 text-sm">
+          <Link href="/tools/headers" className="text-gray-400 hover:text-white transition-colors px-4 py-2 rounded-lg border border-white/10 hover:border-white/20">Headers Checker</Link>
+          <Link href="/tools/ssl" className="text-gray-400 hover:text-white transition-colors px-4 py-2 rounded-lg border border-white/10 hover:border-white/20">SSL Checker</Link>
+        </div>
+
+        <div className="mt-12 text-center card p-8">
           <h2 className="text-xl font-bold mb-2">Want a full security scan?</h2>
           <p className="text-gray-400 text-sm mb-4">
             Get OWASP Top 10 audit, SEO optimization, dependency CVE checks, and auto-fix with one click.
