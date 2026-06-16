@@ -10,6 +10,7 @@ export default function Home() {
   const [inputUrl, setInputUrl] = useState("");
   const [scanning, setScanning] = useState(false);
   const [error, setError] = useState("");
+  const [mobileNav, setMobileNav] = useState(false);
 
   const handleScan = async () => {
     const url = inputUrl.trim();
@@ -78,18 +79,52 @@ export default function Home() {
             <a href="/connect" className="hover:text-white transition-colors">Connect</a>
           </nav>
           <div className="flex items-center gap-3">
-            <a href="/dashboard" className="hidden sm:block text-sm text-gray-400 hover:text-white transition-colors">
-              Sign in
-            </a>
             <a
               href="#scan"
-              className="px-4 py-2 text-sm font-semibold rounded-lg bg-gradient-to-r from-green-500 to-emerald-600 hover:from-green-400 hover:to-emerald-500 text-white shadow-lg shadow-emerald-500/20 transition-all active:scale-95"
+              className="hidden sm:inline-block px-4 py-2 text-sm font-semibold rounded-lg bg-gradient-to-r from-green-500 to-emerald-600 hover:from-green-400 hover:to-emerald-500 text-white shadow-lg shadow-emerald-500/20 transition-all active:scale-95"
             >
               Scan free
             </a>
+            <button
+              onClick={() => setMobileNav(!mobileNav)}
+              className="md:hidden p-2 text-gray-400 hover:text-white"
+              aria-label="Menu"
+            >
+              <svg className="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                {mobileNav ? (
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                ) : (
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 6h16M4 12h16M4 18h16" />
+                )}
+              </svg>
+            </button>
           </div>
         </div>
       </motion.header>
+
+      {/* Mobile nav */}
+      {mobileNav && (
+        <motion.div
+          initial={{ opacity: 0, y: -10 }}
+          animate={{ opacity: 1, y: 0 }}
+          className="md:hidden sticky top-16 z-40 border-b border-white/5 backdrop-blur-xl bg-[#030712]/90"
+        >
+          <nav className="flex flex-col px-6 py-4 gap-3 text-sm text-gray-400">
+            <a href="#features" onClick={() => setMobileNav(false)} className="hover:text-white py-1">Features</a>
+            <a href="#pricing" onClick={() => setMobileNav(false)} className="hover:text-white py-1">Pricing</a>
+            <a href="/blog" className="hover:text-white py-1">Blog</a>
+            <a href="/monitor" className="hover:text-white py-1">Monitoring</a>
+            <a href="/connect" className="hover:text-white py-1">Connect</a>
+            <a
+              href="#scan"
+              onClick={() => setMobileNav(false)}
+              className="mt-2 px-4 py-2.5 text-center text-sm font-semibold rounded-lg bg-gradient-to-r from-green-500 to-emerald-600 text-white"
+            >
+              Scan free
+            </a>
+          </nav>
+        </motion.div>
+      )}
 
       <main className="flex-1 relative z-10">
         {/* Hero Section */}
@@ -122,8 +157,8 @@ export default function Home() {
             {/* Stats */}
             <div className="flex items-center justify-center gap-12 mb-16">
               <div className="text-center">
-                <p className="text-3xl font-bold text-white">94%</p>
-                <p className="text-sm text-gray-500">of vibe-coded apps have critical bugs</p>
+                <p className="text-3xl font-bold text-white">9</p>
+                <p className="text-sm text-gray-500">security modules</p>
               </div>
               <div className="w-px h-12 bg-gray-800" />
               <div className="text-center">
@@ -602,7 +637,6 @@ export default function Home() {
                 <li><a href="#features" className="hover:text-white transition-colors">Features</a></li>
                 <li><a href="#pricing" className="hover:text-white transition-colors">Pricing</a></li>
                 <li><a href="/monitor" className="hover:text-white transition-colors">Monitoring</a></li>
-                <li><a href="/dashboard" className="hover:text-white transition-colors">Dashboard</a></li>
                 <li><a href="/connect" className="hover:text-white transition-colors">Connect Platform</a></li>
               </ul>
             </div>
@@ -617,13 +651,9 @@ export default function Home() {
           </div>
           <div className="pt-6 border-t border-white/5 flex flex-col md:flex-row items-center justify-between gap-4">
             <p className="text-xs text-gray-600">
-              &copy; {new Date().getFullYear()} OverMCP. Secure your AI-built apps. Pay with any cryptocurrency.
+              &copy; {new Date().getFullYear()} OverMCP. Secure your AI-built apps.
             </p>
-            <div className="flex items-center gap-5 text-xs text-gray-600">
-              <a href="/terms" className="hover:text-white transition-colors">Terms</a>
-              <a href="/privacy" className="hover:text-white transition-colors">Privacy</a>
-              <span>Accepts BTC, ETH, USDT &amp; 100+</span>
-            </div>
+            <span className="text-xs text-gray-600">Accepts BTC, ETH, USDT &amp; 100+ cryptocurrencies</span>
           </div>
         </div>
       </footer>

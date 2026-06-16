@@ -141,12 +141,6 @@ export default function RootLayout({
                     "Everything in Fix plus auto-deploy to any platform, llms.txt generated, weekly rescan monitoring, priority support",
                 },
               ],
-              aggregateRating: {
-                "@type": "AggregateRating",
-                ratingValue: "4.9",
-                ratingCount: "47",
-                bestRating: "5",
-              },
             }),
           }}
         />
