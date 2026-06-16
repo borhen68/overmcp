@@ -1,12 +1,17 @@
 import { Resend } from "resend";
 import { withTimeout } from "./http";
 
-const resend = new Resend(process.env.RESEND_API_KEY);
+let _resend: Resend | null = null;
+function getResend() {
+  if (!_resend) {
+    _resend = new Resend(process.env.RESEND_API_KEY);
+  }
+  return _resend;
+}
 
-// Wrap every send with a hard timeout so a stalled SMTP/API call can't hang.
-type EmailPayload = Parameters<typeof resend.emails.send>[0];
+type EmailPayload = Parameters<Resend["emails"]["send"]>[0];
 function sendEmail(payload: EmailPayload) {
-  return withTimeout(resend.emails.send(payload), 15_000, "email send");
+  return withTimeout(getResend().emails.send(payload), 15_000, "email send");
 }
 
 export async function sendReportReady(to: string, scanId: string, url: string, summary: {
