@@ -38,8 +38,11 @@ async function ensureDB() {
     try {
       await initDB();
       dbReady = true;
-    } catch {
-      // DB not available, continue with in-memory only
+    } catch (e) {
+      // DB not available, continue with in-memory only. Log it — on serverless
+      // this is the difference between a scan persisting and silently vanishing
+      // between the POST and the poll (which shows up as a 404).
+      console.error("[db] initDB failed — scans will not persist across instances:", e);
     }
   }
 }
@@ -87,7 +90,8 @@ export async function getScanWithDB(id: string): Promise<ScanRecord | undefined>
     // Don't cache in-progress scans — we want each poll to see fresh progress.
     if (record.status !== "scanning") scans.set(id, record);
     return record;
-  } catch {
+  } catch (e) {
+    console.error(`[db] getScanById(${id}) failed:`, e);
     return undefined;
   }
 }
@@ -97,7 +101,8 @@ export function setScan(id: string, record: ScanRecord): void {
 
   ensureDB().then(() => {
     if (!dbReady) return;
-    createScan({ id, url: record.url, platform: record.platform, email: record.email }).catch(() => {});
+    createScan({ id, url: record.url, platform: record.platform, email: record.email })
+      .catch((e) => console.error(`[db] createScan(${id}) failed:`, e));
   });
 }
 
@@ -111,8 +116,8 @@ export async function flushScan(id: string): Promise<void> {
   if (!dbReady) return;
   try {
     await upsertScan(record);
-  } catch {
-    // DB unavailable — in-memory remains the fallback.
+  } catch (e) {
+    console.error(`[db] flushScan(${id}) failed — record stays in-memory only:`, e);
   }
 }
 
@@ -142,7 +147,8 @@ export function updateScan(
     if (updates.progress !== undefined) dbUpdates.progress = updates.progress;
     if (updates.error !== undefined) dbUpdates.error = updates.error;
 
-    updateScanDB(id, dbUpdates as Parameters<typeof updateScanDB>[1]).catch(() => {});
+    updateScanDB(id, dbUpdates as Parameters<typeof updateScanDB>[1])
+      .catch((e) => console.error(`[db] updateScanDB(${id}) failed:`, e));
   });
 
   return updated;
