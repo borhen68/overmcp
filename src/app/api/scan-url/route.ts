@@ -1,16 +1,21 @@
-import { NextRequest, NextResponse } from "next/server";
+import { NextRequest, NextResponse, after } from "next/server";
 import { crawlSite } from "@/lib/crawler";
-import { analyzeMultipleFiles } from "@/lib/deepseek";
+import { analyzeMultipleFiles, verifyVulnerabilities } from "@/lib/deepseek";
 import { analyzeAEO } from "@/lib/aeo";
 import { analyzePerformance } from "@/lib/performance";
 import { scanDependencies } from "@/lib/dependencies";
 import { scanSecrets } from "@/lib/secrets";
 import { analyzeAccessibility } from "@/lib/accessibility";
 import { detectTechStack } from "@/lib/techstack";
-import { setScan, updateScan, getScan } from "@/lib/store";
+import { setScan, updateScan, getScan, flushScan } from "@/lib/store";
 import { sendReportReady } from "@/lib/email";
 import { rateLimit } from "@/lib/rate-limit";
 import { randomUUID } from "crypto";
+
+// Scans run AI analysis across multiple files — allow time for the work that
+// continues (via `after`) once the initial response is sent.
+export const maxDuration = 60;
+export const dynamic = "force-dynamic";
 
 export async function POST(request: NextRequest) {
   try {
@@ -52,8 +57,13 @@ export async function POST(request: NextRequest) {
       files: [],
     });
 
-    (async () => {
+    // Persist the initial "scanning" record before responding so polling from a
+    // different serverless instance sees it instead of a 404.
+    await flushScan(scanId);
+
+    after(async () => {
       try {
+        updateScan(scanId, { progress: "Crawling your site & extracting code…" });
         const crawlResult = await crawlSite(url);
 
         if (crawlResult.files.length === 0) {
@@ -69,15 +79,28 @@ export async function POST(request: NextRequest) {
           content: f.content,
         }));
 
-        updateScan(scanId, { files: analysisFiles, url, platform: crawlResult.platform });
+        updateScan(scanId, {
+          files: analysisFiles,
+          url,
+          platform: crawlResult.platform,
+          progress: `Found ${analysisFiles.length} files — auditing for vulnerabilities…`,
+        });
 
         // Run all analyses in parallel — AI-powered + static checks
-        const [result, aeoResult, perfResult, cveResult] = await Promise.all([
+        const [rawResult, aeoResult, perfResult, cveResult] = await Promise.all([
           analyzeMultipleFiles(analysisFiles),
           analyzeAEO(analysisFiles, url).catch(() => null),
           analyzePerformance(analysisFiles).catch(() => null),
           scanDependencies(analysisFiles).catch(() => null),
         ]);
+
+        // Second-pass adversarial verification drops unprovable findings so we
+        // never show a user a vulnerability we can't point to in their code.
+        const found = rawResult.vulnerabilities?.length || 0;
+        updateScan(scanId, {
+          progress: found > 0 ? `Verifying ${found} finding${found > 1 ? "s" : ""} to remove false positives…` : "Finalizing report…",
+        });
+        const result = await verifyVulnerabilities(analysisFiles, rawResult).catch(() => rawResult);
 
         // Instant local checks (no API calls)
         const secretsResult = scanSecrets(analysisFiles);
@@ -110,8 +133,11 @@ export async function POST(request: NextRequest) {
             ? "Site not found. Check the URL and try again."
             : `Scan failed: ${message}`,
         });
+      } finally {
+        // Guarantee the final state reaches the DB before the function freezes.
+        await flushScan(scanId);
       }
-    })();
+    });
 
     return NextResponse.json(
       { scanId, status: "scanning" },

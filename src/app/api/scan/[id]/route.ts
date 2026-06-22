@@ -22,6 +22,7 @@ export async function GET(
     return NextResponse.json({
       id: scan.id,
       status: scan.status,
+      progress: scan.progress || null,
     });
   }
 

@@ -58,7 +58,7 @@ export default function LeakScannerPage() {
       <div className="fixed inset-0 aurora pointer-events-none" />
       <div className="fixed inset-0 spotlight pointer-events-none" />
 
-      <header className="sticky top-0 z-50 border-b border-white/5 backdrop-blur-xl bg-[#030712]/70">
+      <header className="sticky top-0 z-50 border-b border-white/5 backdrop-blur-xl bg-[#0c0a09]/70">
         <div className="max-w-5xl mx-auto px-6 h-16 flex items-center justify-between">
           <Link href="/" className="flex items-center gap-2">
             <span className="text-xl font-bold text-gradient">OverMCP</span>
@@ -90,7 +90,7 @@ export default function LeakScannerPage() {
             placeholder={`// Paste code here to scan for leaked secrets...\nconst apiKey = "sk_live_abc123...";`}
             value={code}
             onChange={(e) => setCode(e.target.value)}
-            className="w-full px-4 py-3 rounded-lg bg-white/5 border border-white/10 text-white placeholder-gray-500 font-mono text-sm focus:outline-none focus:ring-2 focus:ring-green-500/50 focus:border-green-500/50 resize-y"
+            className="w-full px-4 py-3 rounded-lg bg-white/5 border border-white/10 text-white placeholder-gray-500 font-mono text-sm focus:outline-none focus:ring-2 focus:ring-amber-500/50 focus:border-amber-500/50 resize-y"
           />
           <button
             onClick={handleScan}

@@ -73,7 +73,7 @@ export default function DashboardPage() {
         <div className="max-w-6xl mx-auto px-6 py-4 flex items-center justify-between">
           <a
             href="/"
-            className="text-xl font-bold bg-gradient-to-r from-green-400 to-emerald-500 bg-clip-text text-transparent"
+            className="text-xl font-bold bg-gradient-to-r from-amber-400 to-amber-500 bg-clip-text text-transparent"
           >
             OverMCP
           </a>
@@ -97,12 +97,12 @@ export default function DashboardPage() {
               value={url}
               onChange={(e) => setUrl(e.target.value)}
               placeholder="Paste any URL or GitHub repo..."
-              className="flex-1 px-4 py-3 rounded-xl bg-white/[0.03] border border-white/10 text-white placeholder-gray-600 focus:outline-none focus:border-green-500/50 transition-colors"
+              className="flex-1 px-4 py-3 rounded-xl bg-white/[0.03] border border-white/10 text-white placeholder-gray-600 focus:outline-none focus:border-amber-500/50 transition-colors"
             />
             <button
               type="submit"
               disabled={scanning || !url.trim()}
-              className="px-6 py-3 rounded-xl font-medium bg-gradient-to-r from-green-500 to-emerald-600 text-white disabled:opacity-50 transition-all hover:shadow-lg hover:shadow-green-500/20"
+              className="px-6 py-3 rounded-xl font-medium bg-gradient-to-r from-amber-500 to-amber-600 text-white disabled:opacity-50 transition-all hover:shadow-lg hover:shadow-amber-500/20"
             >
               {scanning ? "Scanning..." : "Scan"}
             </button>

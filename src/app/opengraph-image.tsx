@@ -17,7 +17,7 @@ export default function OpengraphImage() {
           justifyContent: "center",
           padding: "80px",
           background:
-            "radial-gradient(1000px 500px at 20% -10%, rgba(16,185,129,0.25), transparent), #030712",
+            "radial-gradient(1000px 500px at 20% -10%, rgba(245,158,11,0.25), transparent), #0c0a09",
           color: "white",
           fontFamily: "sans-serif",
         }}
@@ -26,7 +26,7 @@ export default function OpengraphImage() {
           <Mark size={84} />
           <div style={{ display: "flex", fontSize: 44, fontWeight: 700, letterSpacing: "-0.02em" }}>
             <span>Over</span>
-            <span style={{ color: "#34d399" }}>MCP</span>
+            <span style={{ color: "#fbbf24" }}>MCP</span>
           </div>
         </div>
         <div

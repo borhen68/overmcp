@@ -104,6 +104,40 @@ function MarkdownRenderer({ content }: { content: string }) {
   return <div className="prose-custom">{elements}</div>;
 }
 
+// Parse the "## FAQ" section of a markdown post into question/answer pairs.
+// Questions are "### ..." headings; the answer is the text until the next heading.
+function extractFaqs(content: string): { question: string; answer: string }[] {
+  const lines = content.split("\n");
+  const faqs: { question: string; answer: string }[] = [];
+  let inFaq = false;
+  let current: { question: string; answer: string } | null = null;
+
+  for (const line of lines) {
+    const heading2 = line.match(/^##\s+(.*)/);
+    if (heading2) {
+      // Entering the FAQ section, or leaving it for another ## section.
+      if (/faq|frequently asked/i.test(heading2[1])) {
+        inFaq = true;
+      } else if (inFaq) {
+        break;
+      }
+      continue;
+    }
+    if (!inFaq) continue;
+
+    const question = line.match(/^###\s+(.*)/);
+    if (question) {
+      if (current && current.answer.trim()) faqs.push(current);
+      current = { question: question[1].trim(), answer: "" };
+    } else if (current && line.trim()) {
+      // Strip markdown emphasis/code markers so the schema text is clean.
+      current.answer += (current.answer ? " " : "") + line.replace(/[*`>]/g, "").trim();
+    }
+  }
+  if (current && current.answer.trim()) faqs.push(current);
+  return faqs;
+}
+
 function formatInline(text: string): React.ReactNode {
   const parts = text.split(/(`[^`]+`|\*\*[^*]+\*\*|\*[^*]+\*)/g);
   return parts.map((part, i) => {
@@ -139,10 +173,30 @@ export default async function BlogPostPage({ params }: Props) {
     headline: post.title,
     description: post.excerpt,
     datePublished: post.publishedAt,
-    author: { "@type": "Organization", name: "OverMCP" },
-    publisher: { "@type": "Organization", name: "OverMCP", url: "https://overmcp.com" },
+    dateModified: post.publishedAt,
+    keywords: post.tags.join(", "),
+    author: { "@type": "Organization", name: "OverMCP", url: "https://overmcp.com" },
+    publisher: {
+      "@type": "Organization",
+      name: "OverMCP",
+      url: "https://overmcp.com",
+      logo: { "@type": "ImageObject", url: "https://overmcp.com/icon" },
+    },
     mainEntityOfPage: `https://overmcp.com/blog/${post.slug}`,
   };
+
+  // Pull the post's "## FAQ" Q&A pairs into FAQPage structured data — this is
+  // what earns featured snippets and lets ChatGPT/Claude quote the answers.
+  const faqs = extractFaqs(post.content);
+  const faqJsonLd = faqs.length > 0 ? {
+    "@context": "https://schema.org",
+    "@type": "FAQPage",
+    mainEntity: faqs.map((f) => ({
+      "@type": "Question",
+      name: f.question,
+      acceptedAnswer: { "@type": "Answer", text: f.answer },
+    })),
+  } : null;
 
   return (
     <div className="relative min-h-screen bg-grid noise">
@@ -150,8 +204,11 @@ export default async function BlogPostPage({ params }: Props) {
       <div className="fixed inset-0 spotlight pointer-events-none" />
 
       <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }} />
+      {faqJsonLd && (
+        <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(faqJsonLd) }} />
+      )}
 
-      <header className="sticky top-0 z-50 border-b border-white/5 backdrop-blur-xl bg-[#030712]/70">
+      <header className="sticky top-0 z-50 border-b border-white/5 backdrop-blur-xl bg-[#0c0a09]/70">
         <div className="max-w-4xl mx-auto px-6 h-16 flex items-center justify-between">
           <Link href="/" className="flex items-center gap-2">
             <span className="text-xl font-bold text-gradient">OverMCP</span>
@@ -199,12 +256,12 @@ export default async function BlogPostPage({ params }: Props) {
         </article>
 
         {/* CTA */}
-        <div className="mt-16 p-8 rounded-2xl text-center" style={{ background: "linear-gradient(135deg, rgba(16,185,129,0.06) 0%, rgba(16,185,129,0.02) 100%)", border: "1px solid rgba(16,185,129,0.2)" }}>
+        <div className="mt-16 p-8 rounded-2xl text-center" style={{ background: "linear-gradient(135deg, rgba(245,158,11,0.06) 0%, rgba(245,158,11,0.02) 100%)", border: "1px solid rgba(245,158,11,0.2)" }}>
           <h3 className="text-xl font-bold mb-2">Is your app secure?</h3>
           <p className="text-gray-400 text-sm mb-5">Free scan in 30 seconds. No signup needed.</p>
           <Link
             href="/"
-            className="inline-block px-6 py-3 rounded-xl font-semibold text-white bg-gradient-to-r from-green-500 to-emerald-600 hover:from-green-400 hover:to-emerald-500 shadow-lg shadow-emerald-500/25 transition-all"
+            className="inline-block px-6 py-3 rounded-xl font-semibold text-white bg-gradient-to-r from-amber-500 to-amber-600 hover:from-amber-400 hover:to-amber-500 shadow-lg shadow-amber-500/25 transition-all"
           >
             Scan My App Free
           </Link>

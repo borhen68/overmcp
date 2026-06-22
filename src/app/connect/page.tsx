@@ -2,6 +2,7 @@
 
 import { useState } from "react";
 import { useRouter } from "next/navigation";
+import Link from "next/link";
 import { motion } from "framer-motion";
 
 export default function ConnectPage() {
@@ -107,7 +108,14 @@ export default function ConnectPage() {
   };
 
   const handleGitHubConnect = () => {
-    router.push("/dashboard");
+    const appName = process.env.NEXT_PUBLIC_GITHUB_APP_NAME;
+    if (appName && appName !== "your-app-slug") {
+      // Install the GitHub App → enables always-on PR/push scanning.
+      window.location.href = `https://github.com/apps/${appName}/installations/new`;
+    } else {
+      // App not configured yet — fall back to manual repo scanning.
+      router.push("/dashboard");
+    }
   };
 
   return (
@@ -117,7 +125,7 @@ export default function ConnectPage() {
       <header className="relative z-10 border-b border-white/5">
         <div className="max-w-7xl mx-auto px-6 py-5 flex items-center justify-between">
           <a href="/" className="flex items-center gap-2">
-            <div className="w-8 h-8 rounded-lg bg-gradient-to-br from-green-400 to-emerald-600 flex items-center justify-center">
+            <div className="w-8 h-8 rounded-lg bg-gradient-to-br from-amber-400 to-amber-600 flex items-center justify-center">
               <span className="text-white font-bold text-sm">VS</span>
             </div>
             <span className="text-lg font-semibold tracking-tight">OverMCP</span>
@@ -169,7 +177,7 @@ export default function ConnectPage() {
                 value={vercelToken}
                 onChange={(e) => setVercelToken(e.target.value)}
                 placeholder="Paste your Vercel access token"
-                className="w-full px-4 py-3.5 bg-white/5 border border-white/10 rounded-xl text-white placeholder-gray-600 focus:outline-none focus:border-green-500/50 transition-all"
+                className="w-full px-4 py-3.5 bg-white/5 border border-white/10 rounded-xl text-white placeholder-gray-600 focus:outline-none focus:border-amber-500/50 transition-all"
               />
               <p className="text-xs text-gray-600">
                 Create at{" "}
@@ -200,15 +208,42 @@ export default function ConnectPage() {
               </div>
               <div>
                 <h3 className="font-semibold text-lg">GitHub</h3>
-                <p className="text-sm text-gray-400">Scan repos & create PRs with fixes</p>
+                <p className="text-sm text-gray-400">Always-on scanning on every pull request</p>
               </div>
             </div>
             <button
               onClick={handleGitHubConnect}
               className="w-full py-3.5 rounded-xl font-medium bg-white/5 border border-white/10 text-white hover:bg-white/10 transition-all"
             >
-              Connect GitHub
+              Install GitHub App
             </button>
+
+            {/* Permissions transparency — exactly what we do and don't do */}
+            <div className="mt-5 rounded-xl border border-white/8 bg-white/[0.02] p-4 text-xs">
+              <p className="font-semibold text-gray-300 mb-2">What we access</p>
+              <ul className="space-y-2 text-gray-400">
+                {["Read your repository code, to scan it for vulnerabilities", "Open a pull request with fixes — on a new branch only"].map((t) => (
+                  <li key={t} className="flex gap-2 items-start">
+                    <svg className="w-4 h-4 text-emerald-400 mt-px shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2.2}>
+                      <path strokeLinecap="round" strokeLinejoin="round" d="M4.5 12.75l6 6 9-13.5" />
+                    </svg>
+                    {t}
+                  </li>
+                ))}
+              </ul>
+              <p className="font-semibold text-gray-300 mt-3 mb-2">What we never do</p>
+              <ul className="space-y-2 text-gray-400">
+                {["Push to your default branch or merge anything", "Deploy or change your live app", "Sell your code or train AI on it"].map((t) => (
+                  <li key={t} className="flex gap-2 items-start">
+                    <svg className="w-4 h-4 text-rose-400 mt-px shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2.2}>
+                      <path strokeLinecap="round" strokeLinejoin="round" d="M6 18L18 6M6 6l12 12" />
+                    </svg>
+                    {t}
+                  </li>
+                ))}
+              </ul>
+              <p className="mt-3 text-gray-500">You review and merge every change. Want to try first? <Link href="/" className="text-amber-400/80 hover:text-amber-400">Scan a public repo free</Link> — no connection needed.</p>
+            </div>
           </motion.div>
 
           {/* Netlify */}

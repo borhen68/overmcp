@@ -1,4 +1,4 @@
-import { NextRequest, NextResponse } from "next/server";
+import { NextRequest, NextResponse, after } from "next/server";
 import { crawlSite } from "@/lib/crawler";
 import { analyzeMultipleFiles } from "@/lib/deepseek";
 import { analyzeAEO } from "@/lib/aeo";
@@ -7,9 +7,12 @@ import { scanDependencies } from "@/lib/dependencies";
 import { scanSecrets } from "@/lib/secrets";
 import { analyzeAccessibility } from "@/lib/accessibility";
 import { detectTechStack } from "@/lib/techstack";
-import { setScan, updateScan } from "@/lib/store";
+import { setScan, updateScan, flushScan } from "@/lib/store";
 import { rateLimit } from "@/lib/rate-limit";
 import { randomUUID } from "crypto";
+
+export const maxDuration = 60;
+export const dynamic = "force-dynamic";
 
 export async function POST(request: NextRequest) {
   try {
@@ -53,8 +56,10 @@ export async function POST(request: NextRequest) {
         files: [],
       });
 
-      // Run each scan in background (non-blocking)
-      (async () => {
+      await flushScan(scanId);
+
+      // Run each scan in the background; `after` keeps the function alive on serverless.
+      after(async () => {
         try {
           const crawlResult = await crawlSite(url);
           if (crawlResult.files.length === 0) {
@@ -82,8 +87,10 @@ export async function POST(request: NextRequest) {
         } catch (error: unknown) {
           const message = error instanceof Error ? error.message : "Scan failed";
           updateScan(scanId, { status: "error", error: message });
+        } finally {
+          await flushScan(scanId);
         }
-      })();
+      });
     }
 
     return NextResponse.json({ scans: scanIds });

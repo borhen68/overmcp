@@ -1,15 +1,24 @@
 import type { Metadata } from "next";
-import { Geist, Geist_Mono } from "next/font/google";
+import { Inter, Instrument_Serif, JetBrains_Mono } from "next/font/google";
 import "./globals.css";
 
-const geistSans = Geist({
-  variable: "--font-geist-sans",
+const inter = Inter({
+  variable: "--font-body",
   subsets: ["latin"],
+  weight: ["300", "400", "500", "600", "700"],
 });
 
-const geistMono = Geist_Mono({
-  variable: "--font-geist-mono",
+const instrumentSerif = Instrument_Serif({
+  variable: "--font-serif",
   subsets: ["latin"],
+  weight: ["400"],
+  style: ["normal", "italic"],
+});
+
+const jetbrainsMono = JetBrains_Mono({
+  variable: "--font-mono",
+  subsets: ["latin"],
+  weight: ["400", "500", "600", "700"],
 });
 
 const baseUrl = process.env.NEXT_PUBLIC_APP_URL || "https://overmcp.com";
@@ -85,11 +94,11 @@ export default function RootLayout({
   return (
     <html
       lang="en"
-      className={`${geistSans.variable} ${geistMono.variable} h-full antialiased`}
+      className={`${inter.variable} ${instrumentSerif.variable} ${jetbrainsMono.variable} h-full antialiased`}
     >
       <head>
         <link rel="canonical" href={baseUrl} />
-        <meta name="theme-color" content="#0a0a0a" />
+        <meta name="theme-color" content="#0c0a09" />
         <script
           type="application/ld+json"
           dangerouslySetInnerHTML={{
@@ -127,7 +136,7 @@ export default function RootLayout({
                 {
                   "@type": "Offer",
                   name: "Fix",
-                  price: "9",
+                  price: "5",
                   priceCurrency: "USD",
                   description:
                     "Full report with all vulnerabilities, fixed code snippets, SEO + AEO optimization, performance report, dependency audit, auto PR on GitHub",
@@ -135,7 +144,7 @@ export default function RootLayout({
                 {
                   "@type": "Offer",
                   name: "Deploy",
-                  price: "29",
+                  price: "19",
                   priceCurrency: "USD",
                   description:
                     "Everything in Fix plus auto-deploy to any platform, llms.txt generated, weekly rescan monitoring, priority support",
@@ -188,7 +197,7 @@ export default function RootLayout({
                   name: "Can OverMCP automatically fix my code?",
                   acceptedAnswer: {
                     "@type": "Answer",
-                    text: "Yes. The $9 Fix tier creates a GitHub Pull Request with all security fixes applied. The $29 Deploy tier goes further — it deploys the fixed version directly to your hosting platform (Vercel, Netlify, Cloudflare Pages, or Railway) in one click.",
+                    text: "Yes. The $5 Fix tier creates a GitHub Pull Request with all security fixes applied. The $19 Deploy tier goes further — it deploys the fixed version directly to your hosting platform (Vercel, Netlify, Cloudflare Pages, or Railway) in one click.",
                   },
                 },
               ],
@@ -196,7 +205,7 @@ export default function RootLayout({
           }}
         />
       </head>
-      <body className="min-h-full flex flex-col bg-gray-950 text-white">
+      <body className="min-h-full flex flex-col bg-[#0c0a09] text-stone-100">
         {children}
       </body>
     </html>

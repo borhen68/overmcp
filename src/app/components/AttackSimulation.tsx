@@ -433,7 +433,7 @@ export default function AttackSimulation({
                     onClick={onUnlock}
                     className="px-8 py-4 rounded-xl font-bold text-white bg-gradient-to-r from-red-500 to-orange-500 hover:from-red-400 hover:to-orange-400 shadow-lg shadow-red-500/25 transition-all active:scale-[0.98] text-base"
                   >
-                    Fix this now — $9
+                    Fix this now — $5
                   </button>
                   <p className="text-gray-600 text-xs mt-3">
                     Full report with fixes for every vulnerability

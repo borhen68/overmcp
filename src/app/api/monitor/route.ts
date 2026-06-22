@@ -12,7 +12,7 @@ import { hasPaidScan } from "@/lib/db";
 
 export const dynamic = "force-dynamic";
 
-// Continuous monitoring is part of the $29 Deploy plan.
+// Continuous monitoring is part of the $19 Deploy plan.
 const MONITORING_TIER = "deploy";
 
 function publicMonitor(m: {
@@ -61,15 +61,15 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: "Webhook URL must start with https://" }, { status: 400 });
     }
 
-    // Gate: continuous monitoring requires the $29 Deploy plan.
+    // Gate: continuous monitoring requires the $19 Deploy plan.
     const entitled = await hasPaidScan(email.trim(), MONITORING_TIER);
     if (!entitled) {
       return NextResponse.json(
         {
-          error: "Continuous monitoring is part of the $29 Deploy plan.",
+          error: "Continuous monitoring is part of the $19 Deploy plan.",
           requiresPlan: true,
           tier: MONITORING_TIER,
-          price: 29,
+          price: 19,
         },
         { status: 402 }
       );

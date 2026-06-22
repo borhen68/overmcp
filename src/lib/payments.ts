@@ -54,13 +54,37 @@ export async function verifyPayment(paymentId: string): Promise<boolean> {
   );
 }
 
+// NOWPayments signs the IPN body over its JSON with keys sorted alphabetically
+// (recursively). We must reproduce that exact ordering or the HMAC never
+// matches and every webhook is rejected as "Invalid signature".
+function sortKeysDeep(value: unknown): unknown {
+  if (Array.isArray(value)) return value.map(sortKeysDeep);
+  if (value && typeof value === "object") {
+    return Object.keys(value as Record<string, unknown>)
+      .sort()
+      .reduce((acc, key) => {
+        acc[key] = sortKeysDeep((value as Record<string, unknown>)[key]);
+        return acc;
+      }, {} as Record<string, unknown>);
+  }
+  return value;
+}
+
 export function verifyWebhookSignature(
   payload: string,
   signature: string
 ): boolean {
+  const secret = process.env.NOWPAYMENTS_IPN_SECRET;
+  if (!secret || !signature) return false;
+
   const crypto = require("crypto");
-  const hmac = crypto.createHmac("sha512", process.env.NOWPAYMENTS_IPN_SECRET!);
-  hmac.update(JSON.stringify(JSON.parse(payload)));
+  const sorted = JSON.stringify(sortKeysDeep(JSON.parse(payload)));
+  const hmac = crypto.createHmac("sha512", secret);
+  hmac.update(sorted);
   const calculatedSignature = hmac.digest("hex");
-  return calculatedSignature === signature;
+
+  // Constant-time compare to avoid leaking the signature via timing.
+  const a = Buffer.from(calculatedSignature, "hex");
+  const b = Buffer.from(signature, "hex");
+  return a.length === b.length && crypto.timingSafeEqual(a, b);
 }

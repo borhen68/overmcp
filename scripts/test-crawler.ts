@@ -1,0 +1,17 @@
+import { extractEndpoints, extractInternalLinks } from "../src/lib/crawler";
+let pass=0,fail=0; const c=(l:string,b:boolean)=>{b?(pass++,console.log("  ✅ "+l)):(fail++,console.log("  ❌ "+l));};
+const js=`fetch("/api/users/123"); axios.get('/api/orders'); const x="/graphql/query"; img.src="/static/logo.png"; const u="/trpc/post.create";`;
+const eps=extractEndpoints(js,"myapp.com");
+c("finds /api/users", eps.some(e=>e.startsWith("/api/users")));
+c("finds /api/orders", eps.includes("/api/orders"));
+c("finds /graphql", eps.some(e=>e.startsWith("/graphql")));
+c("finds /trpc", eps.some(e=>e.startsWith("/trpc")));
+c("ignores static asset", !eps.some(e=>e.includes("logo.png")));
+const html=`<a href="/about">About</a><a href="https://other.com/x">ext</a><a href="/pricing#top">P</a><a href="mailto:a@b.com">m</a><a href="/logo.png">img</a>`;
+const links=extractInternalLinks(html,"https://myapp.com/","https://myapp.com");
+c("internal /about", links.some(l=>l.endsWith("/about")));
+c("internal /pricing (hash stripped)", links.some(l=>l.endsWith("/pricing")));
+c("excludes external origin", !links.some(l=>l.includes("other.com")));
+c("excludes mailto", !links.some(l=>l.includes("mailto")));
+c("excludes image asset", !links.some(l=>l.includes("logo.png")));
+console.log(`\n=== ${pass}/${pass+fail} passed ===`); if(fail>0)process.exit(1);

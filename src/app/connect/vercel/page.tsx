@@ -72,7 +72,7 @@ export default function VercelProjectsPage() {
         <div className="max-w-6xl mx-auto px-6 py-4 flex items-center justify-between">
           <a
             href="/"
-            className="text-xl font-bold bg-gradient-to-r from-green-400 to-emerald-500 bg-clip-text text-transparent"
+            className="text-xl font-bold bg-gradient-to-r from-amber-400 to-amber-500 bg-clip-text text-transparent"
           >
             OverMCP
           </a>
@@ -113,7 +113,7 @@ export default function VercelProjectsPage() {
               <button
                 onClick={() => handleScan(project)}
                 disabled={scanning === project.id}
-                className="px-5 py-2.5 rounded-lg font-medium text-sm bg-gradient-to-r from-green-500 to-emerald-600 hover:from-green-400 hover:to-emerald-500 text-white disabled:opacity-50 disabled:cursor-not-allowed transition-all"
+                className="px-5 py-2.5 rounded-lg font-medium text-sm bg-gradient-to-r from-amber-500 to-amber-600 hover:from-amber-400 hover:to-amber-500 text-white disabled:opacity-50 disabled:cursor-not-allowed transition-all"
               >
                 {scanning === project.id ? "Scanning..." : "Scan & Fix"}
               </button>

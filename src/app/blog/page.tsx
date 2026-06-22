@@ -29,7 +29,7 @@ export default function BlogPage() {
       <div className="fixed inset-0 aurora pointer-events-none" />
       <div className="fixed inset-0 spotlight pointer-events-none" />
 
-      <header className="sticky top-0 z-50 border-b border-white/5 backdrop-blur-xl bg-[#030712]/70">
+      <header className="sticky top-0 z-50 border-b border-white/5 backdrop-blur-xl bg-[#0c0a09]/70">
         <div className="max-w-5xl mx-auto px-6 h-16 flex items-center justify-between">
           <Link href="/" className="flex items-center gap-2">
             <span className="text-xl font-bold text-gradient">OverMCP</span>

@@ -1,5 +1,5 @@
-import { NextRequest, NextResponse } from "next/server";
-import { getScan, getScanWithDB, setScan, updateScan } from "@/lib/store";
+import { NextRequest, NextResponse, after } from "next/server";
+import { getScan, getScanWithDB, setScan, updateScan, flushScan } from "@/lib/store";
 import { crawlSite } from "@/lib/crawler";
 import { analyzeMultipleFiles } from "@/lib/deepseek";
 import { analyzeAEO } from "@/lib/aeo";
@@ -7,6 +7,9 @@ import { analyzePerformance } from "@/lib/performance";
 import { scanDependencies } from "@/lib/dependencies";
 import { sendRescanAlert } from "@/lib/email";
 import { randomUUID } from "crypto";
+
+export const maxDuration = 60;
+export const dynamic = "force-dynamic";
 
 export async function POST(request: NextRequest) {
   try {
@@ -26,7 +29,7 @@ export async function POST(request: NextRequest) {
     }
 
     if (!originalScan.paid || originalScan.tier !== "deploy") {
-      return NextResponse.json({ error: "Rescan requires Deploy tier ($29)" }, { status: 403 });
+      return NextResponse.json({ error: "Rescan requires Deploy tier ($19)" }, { status: 403 });
     }
 
     if (!originalScan.url) {
@@ -50,7 +53,9 @@ export async function POST(request: NextRequest) {
     const email = originalScan.email;
     const previousIssueCount = originalScan.result?.summary.totalIssues || 0;
 
-    (async () => {
+    await flushScan(newScanId);
+
+    after(async () => {
       try {
         const crawlResult = await crawlSite(url);
 
@@ -88,8 +93,10 @@ export async function POST(request: NextRequest) {
       } catch (error: unknown) {
         const message = error instanceof Error ? error.message : "Rescan failed";
         updateScan(newScanId, { status: "error", error: message });
+      } finally {
+        await flushScan(newScanId);
       }
-    })();
+    });
 
     return NextResponse.json({ scanId: newScanId, status: "scanning" });
   } catch (error: unknown) {

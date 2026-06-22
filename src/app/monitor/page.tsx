@@ -48,7 +48,7 @@ export default function MonitorPage() {
       const data = await res.json();
       if (res.status === 402 || data.requiresPlan) {
         setLocked(true);
-        setMessage({ type: "err", text: data.error || "Continuous monitoring is part of the $29 Deploy plan." });
+        setMessage({ type: "err", text: data.error || "Continuous monitoring is part of the $19 Deploy plan." });
       } else if (!res.ok) {
         setMessage({ type: "err", text: data.error || "Something went wrong" });
       } else {
@@ -94,7 +94,7 @@ export default function MonitorPage() {
   return (
     <div className="relative min-h-screen bg-grid noise text-white">
       <div className="fixed inset-0 aurora pointer-events-none" />
-      <header className="sticky top-0 z-50 border-b border-white/5 backdrop-blur-xl bg-[#030712]/70">
+      <header className="sticky top-0 z-50 border-b border-white/5 backdrop-blur-xl bg-[#0c0a09]/70">
         <div className="max-w-2xl mx-auto px-6 h-16 flex items-center">
           <a href="/" aria-label="OverMCP home">
             <Logo markClass="w-8 h-8" textClass="text-lg" />
@@ -106,12 +106,12 @@ export default function MonitorPage() {
           <div className="flex items-center gap-3">
             <h1 className="text-3xl font-bold tracking-tight">Continuous Monitoring</h1>
             <span className="text-xs font-semibold px-2 py-1 rounded-full bg-green-500/10 text-green-400 border border-green-500/30">
-              Deploy plan · $29
+              Deploy plan · $19
             </span>
           </div>
           <p className="text-gray-400 mt-2">
             We re-scan your live site on a schedule and email you the moment a new secret leak or
-            vulnerable dependency appears. Set it once and forget it. Included with the $29 Deploy plan.
+            vulnerable dependency appears. Set it once and forget it. Included with the $19 Deploy plan.
           </p>
         </motion.div>
 
@@ -128,7 +128,7 @@ export default function MonitorPage() {
               value={url}
               onChange={(e) => setUrl(e.target.value)}
               placeholder="myapp.vercel.app"
-              className="w-full bg-black border border-neutral-800 rounded-xl px-4 py-3 text-white placeholder-gray-600 focus:outline-none focus:border-green-500"
+              className="w-full bg-black border border-neutral-800 rounded-xl px-4 py-3 text-white placeholder-gray-600 focus:outline-none focus:border-amber-500"
               required
             />
           </div>
@@ -139,7 +139,7 @@ export default function MonitorPage() {
               value={email}
               onChange={(e) => setEmail(e.target.value)}
               placeholder="you@example.com"
-              className="w-full bg-black border border-neutral-800 rounded-xl px-4 py-3 text-white placeholder-gray-600 focus:outline-none focus:border-green-500"
+              className="w-full bg-black border border-neutral-800 rounded-xl px-4 py-3 text-white placeholder-gray-600 focus:outline-none focus:border-amber-500"
               required
             />
           </div>
@@ -151,7 +151,7 @@ export default function MonitorPage() {
               value={webhookUrl}
               onChange={(e) => setWebhookUrl(e.target.value)}
               placeholder="https://hooks.slack.com/services/..."
-              className="w-full bg-black border border-neutral-800 rounded-xl px-4 py-3 text-white placeholder-gray-600 focus:outline-none focus:border-green-500"
+              className="w-full bg-black border border-neutral-800 rounded-xl px-4 py-3 text-white placeholder-gray-600 focus:outline-none focus:border-amber-500"
             />
           </div>
           <div>
@@ -183,7 +183,7 @@ export default function MonitorPage() {
           {locked && (
             <div className="rounded-xl border border-green-500/30 bg-green-500/5 p-4 text-sm">
               <p className="text-gray-300">
-                This email isn&apos;t on the <strong className="text-green-400">$29 Deploy plan</strong> yet.
+                This email isn&apos;t on the <strong className="text-green-400">$19 Deploy plan</strong> yet.
                 Run a scan and unlock the Deploy plan to enable continuous monitoring.
               </p>
               <a
@@ -198,7 +198,7 @@ export default function MonitorPage() {
           <button
             type="submit"
             disabled={submitting}
-            className="w-full bg-gradient-to-r from-green-500 to-emerald-600 text-white font-semibold rounded-xl px-4 py-3 disabled:opacity-50"
+            className="w-full bg-gradient-to-r from-amber-500 to-amber-600 text-white font-semibold rounded-xl px-4 py-3 disabled:opacity-50"
           >
             {submitting ? "Setting up…" : "Start monitoring"}
           </button>
@@ -218,7 +218,7 @@ export default function MonitorPage() {
               value={lookupEmail}
               onChange={(e) => setLookupEmail(e.target.value)}
               placeholder="you@example.com"
-              className="flex-1 bg-black border border-neutral-800 rounded-xl px-4 py-3 text-white placeholder-gray-600 focus:outline-none focus:border-green-500"
+              className="flex-1 bg-black border border-neutral-800 rounded-xl px-4 py-3 text-white placeholder-gray-600 focus:outline-none focus:border-amber-500"
             />
             <button
               onClick={() => loadMonitors()}

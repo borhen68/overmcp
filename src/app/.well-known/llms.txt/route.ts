@@ -17,8 +17,8 @@ OverMCP is a SaaS tool that accepts any URL (live website or GitHub repo), crawl
 ## Pricing
 
 - **Free Scan** — Vulnerability count, risk summary, scores, 1 issue preview
-- **Fix ($9 USD in crypto)** — Full report with all vulnerabilities, fixed code, SEO/AEO recommendations, auto PR on GitHub
-- **Deploy ($29 USD in crypto)** — Everything in Fix plus auto-deploy to Vercel/Netlify/Cloudflare/Railway, weekly rescan monitoring
+- **Fix ($5 USD in crypto)** — Full report with all vulnerabilities, fixed code, SEO/AEO recommendations, auto PR on GitHub
+- **Deploy ($19 USD in crypto)** — Everything in Fix plus auto-deploy to Vercel/Netlify/Cloudflare/Railway, rescan monitoring
 
 ## Supported Platforms
 

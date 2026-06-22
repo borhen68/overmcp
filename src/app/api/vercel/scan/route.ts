@@ -1,8 +1,11 @@
-import { NextRequest, NextResponse } from "next/server";
+import { NextRequest, NextResponse, after } from "next/server";
 import { getLatestDeployment, getDeploymentFiles } from "@/lib/vercel";
 import { analyzeMultipleFiles } from "@/lib/deepseek";
-import { setScan, updateScan } from "@/lib/store";
+import { setScan, updateScan, flushScan } from "@/lib/store";
 import { randomUUID } from "crypto";
+
+export const maxDuration = 60;
+export const dynamic = "force-dynamic";
 
 export async function POST(request: NextRequest) {
   const token = request.cookies.get("vercel_token")?.value;
@@ -32,8 +35,9 @@ export async function POST(request: NextRequest) {
       files: [],
     });
 
-    // Run in background
-    (async () => {
+    await flushScan(scanId);
+
+    after(async () => {
       try {
         const deploymentId = await getLatestDeployment(token, projectId);
         if (!deploymentId) {
@@ -59,8 +63,10 @@ export async function POST(request: NextRequest) {
       } catch (error: unknown) {
         const message = error instanceof Error ? error.message : "Scan failed";
         updateScan(scanId, { status: "error", error: message });
+      } finally {
+        await flushScan(scanId);
       }
-    })();
+    });
 
     return NextResponse.json({
       scanId,

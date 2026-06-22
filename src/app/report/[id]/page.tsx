@@ -5,11 +5,46 @@ import { useParams, useSearchParams } from "next/navigation";
 import { motion, AnimatePresence } from "framer-motion";
 import Logo from "../../components/Logo";
 import AttackSimulation from "../../components/AttackSimulation";
+import TrustBadges from "../../components/TrustBadges";
+import { buildPlainSummary, PlainSummary } from "@/lib/summary";
+
+function PlainSummaryCard({ s }: { s: PlainSummary }) {
+  const tone =
+    s.tone === "danger"
+      ? { border: "border-red-500/30", bg: "bg-red-500/[0.06]", text: "text-red-300", dot: "bg-red-400" }
+      : s.tone === "warning"
+      ? { border: "border-amber-500/30", bg: "bg-amber-500/[0.06]", text: "text-amber-300", dot: "bg-amber-400" }
+      : { border: "border-emerald-500/30", bg: "bg-emerald-500/[0.06]", text: "text-emerald-300", dot: "bg-emerald-400" };
+  return (
+    <motion.div
+      initial={{ opacity: 0, y: 12 }}
+      animate={{ opacity: 1, y: 0 }}
+      className={`glass-strong rounded-2xl p-6 mb-8 border ${tone.border} ${tone.bg}`}
+    >
+      <div className="flex items-center gap-2 mb-2">
+        <span className={`w-2 h-2 rounded-full ${tone.dot}`} />
+        <span className={`text-xs font-bold uppercase tracking-wider ${tone.text}`}>{s.verdict}</span>
+      </div>
+      <h3 className="text-lg md:text-xl font-bold text-white mb-2">{s.headline}</h3>
+      <p className="text-sm text-gray-300 leading-relaxed mb-4">{s.paragraph}</p>
+      <p className="text-xs font-semibold text-gray-400 uppercase tracking-wider mb-2">What to do first</p>
+      <ol className="space-y-1.5">
+        {s.actions.map((a, i) => (
+          <li key={i} className="flex items-start gap-2 text-sm text-gray-300">
+            <span className={`mt-0.5 flex-shrink-0 w-5 h-5 rounded-full ${tone.bg} ${tone.text} border ${tone.border} flex items-center justify-center text-[11px] font-bold`}>{i + 1}</span>
+            <span>{a}</span>
+          </li>
+        ))}
+      </ol>
+    </motion.div>
+  );
+}
 
 interface ScanData {
   id: string;
   url?: string;
   status: "scanning" | "done" | "error";
+  progress?: string | null;
   paid: boolean;
   tier?: string;
   summary?: {
@@ -73,6 +108,8 @@ interface ScanData {
       description: string;
       fix: string;
       fixedCode?: string;
+      verified?: boolean;
+      verifyReason?: string;
     }[];
     seoIssues: {
       issue: string;
@@ -235,6 +272,42 @@ function RiskGauge({ score, size = 160 }: { score: number; size?: number }) {
   );
 }
 
+// Full-circle SAFETY score (higher = safer). Used in the paid report hero.
+function ScoreRing({ score, size = 132 }: { score: number; size?: number }) {
+  const stroke = 11;
+  const radius = (size - stroke) / 2;
+  const circumference = 2 * Math.PI * radius;
+  const offset = circumference - (Math.max(0, Math.min(100, score)) / 100) * circumference;
+  const color = score >= 80 ? "#34d399" : score >= 50 ? "#facc15" : score >= 25 ? "#fb923c" : "#f87171";
+  const label = score >= 80 ? "Secure" : score >= 50 ? "Fair" : score >= 25 ? "At risk" : "Critical";
+
+  return (
+    <div className="relative shrink-0" style={{ width: size, height: size }}>
+      <svg width={size} height={size} className="-rotate-90">
+        <circle cx={size / 2} cy={size / 2} r={radius} fill="none" stroke="rgba(255,255,255,0.07)" strokeWidth={stroke} />
+        <motion.circle
+          cx={size / 2}
+          cy={size / 2}
+          r={radius}
+          fill="none"
+          stroke={color}
+          strokeWidth={stroke}
+          strokeLinecap="round"
+          strokeDasharray={circumference}
+          initial={{ strokeDashoffset: circumference }}
+          animate={{ strokeDashoffset: offset }}
+          transition={{ duration: 1.4, ease: "easeOut" }}
+          style={{ filter: `drop-shadow(0 0 10px ${color}55)` }}
+        />
+      </svg>
+      <div className="absolute inset-0 flex flex-col items-center justify-center">
+        <span className="text-4xl font-black leading-none" style={{ color }}>{score}</span>
+        <span className="text-[10px] uppercase tracking-widest text-gray-500 mt-1">{label}</span>
+      </div>
+    </div>
+  );
+}
+
 function PulsingDot({ color }: { color: string }) {
   return (
     <span className="relative flex h-2.5 w-2.5">
@@ -253,6 +326,7 @@ export default function ReportPage() {
   const [data, setData] = useState<ScanData | null>(null);
   const [loading, setLoading] = useState(true);
   const [paying, setPaying] = useState(false);
+  const [payError, setPayError] = useState("");
   const [creatingPR, setCreatingPR] = useState(false);
   const [prUrl, setPrUrl] = useState<string | null>(null);
   const [deploying, setDeploying] = useState(false);
@@ -290,6 +364,7 @@ export default function ReportPage() {
 
   const handlePayment = async (tier: string = "fix") => {
     setPaying(true);
+    setPayError("");
     try {
       const res = await fetch("/api/payment/create", {
         method: "POST",
@@ -297,8 +372,13 @@ export default function ReportPage() {
         body: JSON.stringify({ scanId: id, tier }),
       });
       const json = await res.json();
-      if (json.invoiceUrl) window.location.href = json.invoiceUrl;
-    } catch {
+      if (res.ok && json.invoiceUrl) {
+        window.location.href = json.invoiceUrl;
+        return; // keep the button in "Redirecting…" while the browser navigates
+      }
+      throw new Error(json.error || "Could not start checkout. Please try again.");
+    } catch (e: unknown) {
+      setPayError(e instanceof Error ? e.message : "Payment failed. Please try again.");
       setPaying(false);
     }
   };
@@ -386,8 +466,8 @@ export default function ReportPage() {
       <div className="min-h-screen bg-grid flex items-center justify-center">
         <div className="fixed inset-0 spotlight pointer-events-none" />
         <motion.div initial={{ opacity: 0, scale: 0.95 }} animate={{ opacity: 1, scale: 1 }} className="text-center relative z-10">
-          <div className="w-16 h-16 mx-auto mb-6 rounded-2xl bg-gradient-to-br from-green-500/20 to-emerald-500/20 border border-green-500/20 flex items-center justify-center">
-            <svg className="animate-spin h-7 w-7 text-green-400" viewBox="0 0 24 24">
+          <div className="w-16 h-16 mx-auto mb-6 rounded-2xl bg-gradient-to-br from-amber-500/20 to-amber-400/10 border border-amber-500/20 flex items-center justify-center">
+            <svg className="animate-spin h-7 w-7 text-amber-400" viewBox="0 0 24 24">
               <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" fill="none" />
               <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z" />
             </svg>
@@ -405,16 +485,27 @@ export default function ReportPage() {
       <div className="min-h-screen bg-grid flex items-center justify-center">
         <div className="fixed inset-0 spotlight pointer-events-none" />
         <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} className="text-center max-w-md relative z-10">
-          <div className="w-20 h-20 mx-auto mb-8 rounded-2xl bg-gradient-to-br from-green-500/20 to-emerald-500/20 border border-green-500/20 flex items-center justify-center glow-green">
-            <svg className="animate-spin h-8 w-8 text-green-400" viewBox="0 0 24 24">
+          <div className="w-20 h-20 mx-auto mb-8 rounded-2xl bg-gradient-to-br from-amber-500/20 to-amber-400/10 border border-amber-500/20 flex items-center justify-center glow-amber">
+            <svg className="animate-spin h-8 w-8 text-amber-400" viewBox="0 0 24 24">
               <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" fill="none" />
               <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z" />
             </svg>
           </div>
           <h2 className="text-2xl font-bold mb-3">Deep scanning your code...</h2>
-          <p className="text-gray-400 leading-relaxed mb-8">
-            Running 9 security modules in parallel. This takes 15-30 seconds.
-          </p>
+          {data.progress ? (
+            <motion.p
+              key={data.progress}
+              initial={{ opacity: 0, y: 4 }}
+              animate={{ opacity: 1, y: 0 }}
+              className="text-amber-300/90 font-medium leading-relaxed mb-8"
+            >
+              {data.progress}
+            </motion.p>
+          ) : (
+            <p className="text-gray-400 leading-relaxed mb-8">
+              Running multiple security modules. This takes 15-30 seconds.
+            </p>
+          )}
           <div className="text-left glass rounded-xl p-5 space-y-4">
             {[
               { label: "Crawling & extracting source code", icon: "🌐", delay: 0 },
@@ -482,6 +573,19 @@ export default function ReportPage() {
     return { label: "Looks Healthy", tone: "#34d399", bg: "rgba(16,185,129,0.08)", border: "rgba(16,185,129,0.25)", emoji: "✅" };
   })();
 
+  const plainSummary = buildPlainSummary({
+    critical: summary?.critical,
+    high: summary?.high,
+    medium: summary?.medium,
+    low: summary?.low,
+    totalVulnerabilities: data.totalVulnerabilities,
+    secretLeaks: leaks,
+    totalCVEs: data.totalCVEs ?? data.dependencies?.vulnerabilities?.length,
+    performanceScore: data.performanceScore ?? data.performance?.score ?? null,
+    accessibilityScore: data.accessibilityScore ?? data.accessibility?.score ?? null,
+    aeoScore: data.aeoScore ?? null,
+  });
+
   // --- UNPAID REPORT (CONVERSION-FOCUSED) ---
   if (!data.paid) {
     return (
@@ -489,7 +593,7 @@ export default function ReportPage() {
         <div className="fixed inset-0 aurora pointer-events-none" />
         <div className="fixed inset-0 spotlight pointer-events-none" />
 
-        <header className="sticky top-0 z-50 border-b border-white/5 backdrop-blur-xl bg-[#030712]/70">
+        <header className="sticky top-0 z-50 border-b border-white/5 backdrop-blur-xl bg-[#0c0a09]/70">
           <div className="max-w-5xl mx-auto px-6 h-16 flex items-center justify-between">
             <a href="/" aria-label="Home">
               <Logo markClass="w-8 h-8" textClass="text-lg" />
@@ -539,6 +643,9 @@ export default function ReportPage() {
                 : `Our 9-module scan detected ${totalIssues} issue${totalIssues !== 1 ? "s" : ""} that could compromise your users' data and your app's reputation.`}
             </motion.p>
           </motion.div>
+
+          {/* === PLAIN-ENGLISH SUMMARY === */}
+          <PlainSummaryCard s={plainSummary} />
 
           {/* === SEVERITY BREAKDOWN — Animated bars === */}
           {summary && (
@@ -790,7 +897,7 @@ export default function ReportPage() {
                     onChange={(e) => setEmail(e.target.value)}
                     onKeyDown={(e) => e.key === "Enter" && handleEmailSubmit()}
                     placeholder="you@email.com"
-                    className="flex-1 sm:w-56 px-4 py-2.5 bg-white/5 border border-white/10 rounded-lg text-white placeholder-gray-600 focus:outline-none focus:border-green-500/50 text-sm"
+                    className="flex-1 sm:w-56 px-4 py-2.5 bg-white/5 border border-white/10 rounded-lg text-white placeholder-gray-600 focus:outline-none focus:border-amber-500/50 text-sm"
                   />
                   <button
                     onClick={handleEmailSubmit}
@@ -824,13 +931,13 @@ export default function ReportPage() {
               </p>
             </div>
 
-            <div className="grid md:grid-cols-3 gap-6 max-w-5xl mx-auto">
-              {/* Quick Fix tier */}
+            <div className="grid md:grid-cols-2 gap-6 max-w-3xl mx-auto">
+              {/* Fix tier */}
               <div className="glass-strong rounded-2xl p-7 flex flex-col relative overflow-hidden">
                 <div className="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-transparent via-white/10 to-transparent" />
-                <h4 className="font-bold text-xl mb-1">Quick Fix</h4>
+                <h4 className="font-bold text-xl mb-1">Fix</h4>
                 <div className="flex items-baseline gap-1 mb-1">
-                  <span className="text-4xl font-black">$9</span>
+                  <span className="text-4xl font-black">$5</span>
                   <span className="text-sm text-gray-500">in crypto</span>
                 </div>
                 <p className="text-sm text-gray-500 mb-6">Full vulnerability report with AI-generated fix code for every issue</p>
@@ -839,6 +946,7 @@ export default function ReportPage() {
                     "Full report with all vulnerabilities",
                     "AI-generated fix code",
                     "SEO & performance scores",
+                    "Auto PR on GitHub",
                     "Export as PDF/Markdown",
                   ].map((f, i) => (
                     <li key={i} className="flex items-start gap-2.5">
@@ -850,34 +958,35 @@ export default function ReportPage() {
                   ))}
                 </ul>
                 <button
-                  onClick={() => handlePayment("quick-fix")}
+                  onClick={() => handlePayment("fix")}
                   disabled={paying}
                   className="w-full py-4 rounded-xl font-bold text-white bg-white/5 border border-white/15 hover:bg-white/10 hover:border-white/25 disabled:opacity-50 transition-all"
                 >
-                  {paying ? "Redirecting..." : "Get Full Report — $9"}
+                  {paying ? "Redirecting..." : "Get Full Report — $5"}
                 </button>
               </div>
 
-              {/* Deep Scan tier — highlighted */}
-              <div className="relative rounded-2xl p-7 pt-9 flex flex-col" style={{ background: "linear-gradient(135deg, rgba(16,185,129,0.06) 0%, rgba(16,185,129,0.02) 100%)", border: "1px solid rgba(16,185,129,0.25)" }}>
-                <div className="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-green-500 via-emerald-400 to-green-500 rounded-t-2xl" />
-                <div className="absolute top-2 right-5 px-3 py-1 bg-gradient-to-r from-green-500 to-emerald-600 rounded-full text-[11px] font-bold text-white shadow-lg shadow-emerald-500/30 uppercase tracking-wide">
+              {/* Deploy tier — highlighted */}
+              <div className="relative rounded-2xl p-7 pt-9 flex flex-col" style={{ background: "linear-gradient(135deg, rgba(245,158,11,0.06) 0%, rgba(245,158,11,0.02) 100%)", border: "1px solid rgba(245,158,11,0.25)" }}>
+                <div className="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-amber-500 via-amber-400 to-amber-500 rounded-t-2xl" />
+                <div className="absolute top-2 right-5 px-3 py-1 bg-gradient-to-r from-amber-500 to-amber-600 rounded-full text-[11px] font-bold text-white shadow-lg shadow-amber-500/30 uppercase tracking-wide">
                   Most Popular
                 </div>
-                <h4 className="font-bold text-xl mb-1">Deep Scan</h4>
+                <h4 className="font-bold text-xl mb-1">Deploy</h4>
                 <div className="flex items-baseline gap-1 mb-1">
-                  <span className="text-4xl font-black text-green-400">$29</span>
+                  <span className="text-4xl font-black text-amber-400">$19</span>
                   <span className="text-sm text-gray-500">in crypto</span>
                 </div>
-                <p className="text-sm text-gray-500 mb-6">Everything in Quick Fix plus deeper analysis and priority support</p>
+                <p className="text-sm text-gray-500 mb-6">We fix and deploy the secured version for you, plus deeper analysis</p>
                 <ul className="text-sm text-gray-300 space-y-3 mb-8 flex-1">
                   {[
-                    "Everything in Quick Fix",
+                    "Everything in Fix",
+                    "Auto-deploy the fixed version",
                     "Dependency CVE scanning",
                     "Secret leak detection",
-                    "Accessibility audit",
                     "AI security chat",
-                    "Priority email support",
+                    "Rescan monitoring + trust badge",
+                    "Priority support",
                   ].map((f, i) => (
                     <li key={i} className="flex items-start gap-2.5">
                       <svg className="w-4 h-4 text-emerald-400 mt-0.5 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor">
@@ -888,48 +997,32 @@ export default function ReportPage() {
                   ))}
                 </ul>
                 <button
-                  onClick={() => handlePayment("deep-scan")}
+                  onClick={() => handlePayment("deploy")}
                   disabled={paying}
-                  className="w-full py-4 rounded-xl font-bold text-white bg-gradient-to-r from-green-500 to-emerald-600 hover:from-green-400 hover:to-emerald-500 shadow-lg shadow-emerald-500/25 disabled:opacity-50 transition-all active:scale-[0.98]"
+                  className="w-full py-4 rounded-xl font-bold text-white bg-gradient-to-r from-amber-500 to-amber-600 hover:from-amber-400 hover:to-amber-500 shadow-lg shadow-amber-500/25 disabled:opacity-50 transition-all active:scale-[0.98]"
                 >
-                  {paying ? "Redirecting..." : "Deep Scan — $29"}
-                </button>
-              </div>
-
-              {/* Continuous tier */}
-              <div className="glass-strong rounded-2xl p-7 flex flex-col relative overflow-hidden">
-                <div className="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-transparent via-white/10 to-transparent" />
-                <h4 className="font-bold text-xl mb-1">Continuous</h4>
-                <div className="flex items-baseline gap-1 mb-1">
-                  <span className="text-4xl font-black">$49</span>
-                  <span className="text-sm text-gray-500">/month</span>
-                </div>
-                <p className="text-sm text-gray-500 mb-6">Daily monitoring with instant alerts when new vulnerabilities appear</p>
-                <ul className="text-sm text-gray-300 space-y-3 mb-8 flex-1">
-                  {[
-                    "Everything in Deep Scan",
-                    "Daily automated rescans",
-                    "Instant email alerts",
-                    "Trust badge for your site",
-                    "Monitoring dashboard",
-                  ].map((f, i) => (
-                    <li key={i} className="flex items-start gap-2.5">
-                      <svg className="w-4 h-4 text-green-400 mt-0.5 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M4.5 12.75l6 6 9-13.5" />
-                      </svg>
-                      {f}
-                    </li>
-                  ))}
-                </ul>
-                <button
-                  onClick={() => handlePayment("continuous")}
-                  disabled={paying}
-                  className="w-full py-4 rounded-xl font-bold text-white bg-white/5 border border-white/15 hover:bg-white/10 hover:border-white/25 disabled:opacity-50 transition-all"
-                >
-                  {paying ? "Redirecting..." : "Start Monitoring — $49/mo"}
+                  {paying ? "Redirecting..." : "Fix & Deploy — $19"}
                 </button>
               </div>
             </div>
+
+            {payError && (
+              <div className="mt-6 max-w-xl mx-auto rounded-xl border border-red-500/30 bg-red-500/[0.06] px-4 py-3 text-center">
+                <p className="text-sm text-red-300">{payError}</p>
+              </div>
+            )}
+
+            {/* Dev-only unlock — never rendered in production builds */}
+            {process.env.NODE_ENV !== "production" && (
+              <div className="mt-6 text-center">
+                <a
+                  href={`/api/payment/dev-unlock?scanId=${id}&tier=deploy`}
+                  className="inline-flex items-center gap-2 px-4 py-2 rounded-lg border border-dashed border-amber-500/40 bg-amber-500/[0.05] text-amber-300 text-xs font-mono hover:bg-amber-500/10 transition-all"
+                >
+                  🔓 Dev unlock (skip payment) — testing only
+                </a>
+              </div>
+            )}
 
             {/* Trust signals */}
             <div className="flex flex-wrap items-center justify-center gap-x-8 gap-y-3 mt-8 text-xs text-gray-500">
@@ -949,6 +1042,11 @@ export default function ReportPage() {
                 <svg className="w-4 h-4 text-gray-600" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M9 12.75L11.25 15 15 9.75m-3-7.036A11.959 11.959 0 013.598 6 11.99 11.99 0 003 9.749c0 5.592 3.824 10.29 9 11.623 5.176-1.332 9-6.03 9-11.622 0-1.31-.21-2.571-.598-3.751h-.152c-3.196 0-6.1-1.248-8.25-3.285z" /></svg>
                 9 security modules
               </span>
+            </div>
+
+            {/* Trust signals — why it's safe to let us scan/fix your code */}
+            <div className="mt-12">
+              <TrustBadges compact />
             </div>
           </motion.div>
 
@@ -991,7 +1089,7 @@ export default function ReportPage() {
       <div className="fixed inset-0 aurora pointer-events-none" />
       <div className="fixed inset-0 spotlight pointer-events-none" />
 
-      <header className="sticky top-0 z-50 border-b border-white/5 backdrop-blur-xl bg-[#030712]/70">
+      <header className="sticky top-0 z-50 border-b border-white/5 backdrop-blur-xl bg-[#0c0a09]/70">
         <div className="max-w-6xl mx-auto px-6 h-16 flex items-center justify-between">
           <a href="/" aria-label="Home">
             <Logo markClass="w-8 h-8" textClass="text-lg" />
@@ -1005,43 +1103,53 @@ export default function ReportPage() {
       </header>
 
       <main className="relative z-10 max-w-6xl mx-auto px-6 py-10">
-        {/* Summary bar */}
-        {summary && (
-          <motion.div
-            initial={{ y: 20, opacity: 0 }}
-            animate={{ y: 0, opacity: 1 }}
-            className="glass-strong rounded-2xl p-6 mb-8"
-          >
-            <div className="flex flex-col md:flex-row items-center gap-6">
-              <div className="flex items-center gap-4">
-                <div className="w-16 h-16 rounded-xl flex items-center justify-center" style={{ background: verdict.bg, border: `1px solid ${verdict.border}` }}>
-                  <span className="text-3xl">{verdict.emoji}</span>
-                </div>
-                <div>
-                  <span className="inline-block px-2.5 py-0.5 rounded-md text-xs font-bold mb-1" style={{ background: verdict.bg, color: verdict.tone, border: `1px solid ${verdict.border}` }}>
-                    {verdict.label}
-                  </span>
-                  <p className="text-xl font-bold">{totalIssues} issues found</p>
-                </div>
+        {/* === HERO: safety score + scanned target + severity breakdown === */}
+        <motion.div
+          initial={{ y: 20, opacity: 0 }}
+          animate={{ y: 0, opacity: 1 }}
+          transition={{ duration: 0.5 }}
+          className="glass-strong rounded-2xl p-6 md:p-8 mb-6"
+        >
+          <div className="flex flex-col md:flex-row items-center gap-8">
+            <ScoreRing score={plainSummary.score} />
+
+            <div className="flex-1 w-full min-w-0">
+              <div className="flex items-center gap-2 mb-1.5">
+                <PulsingDot color={verdict.tone} />
+                <span className="text-sm font-bold" style={{ color: verdict.tone }}>{verdict.label}</span>
               </div>
-              <div className="flex-1 grid grid-cols-3 md:grid-cols-6 gap-3">
+              <h1 className="text-2xl md:text-3xl font-black tracking-tight mb-1">
+                {totalIssues > 0 ? <>{totalIssues} issue{totalIssues !== 1 ? "s" : ""} found</> : <>No issues found</>}
+              </h1>
+              <p className="text-sm text-gray-500 font-mono truncate mb-5">
+                {data.url || (repoParam ? `github.com/${repoParam}` : "Your project")}
+              </p>
+
+              <div className="grid grid-cols-3 sm:grid-cols-6 gap-2.5">
                 {[
-                  { label: "Critical", value: summary.critical, color: "#f87171" },
-                  { label: "High", value: summary.high, color: "#fb923c" },
-                  { label: "Medium", value: summary.medium, color: "#facc15" },
-                  { label: "Low", value: summary.low, color: "#60a5fa" },
-                  { label: "SEO", value: summary.seoScore, color: "#34d399" },
-                  { label: "AEO", value: summary.aeoScore || 0, color: "#c084fc" },
+                  { label: "Critical", value: summary?.critical ?? 0, color: "#f87171", bg: "rgba(248,113,113,0.1)", border: "rgba(248,113,113,0.25)" },
+                  { label: "High", value: summary?.high ?? 0, color: "#fb923c", bg: "rgba(251,146,60,0.1)", border: "rgba(251,146,60,0.25)" },
+                  { label: "Medium", value: summary?.medium ?? 0, color: "#facc15", bg: "rgba(250,204,21,0.1)", border: "rgba(250,204,21,0.25)" },
+                  { label: "Low", value: summary?.low ?? 0, color: "#60a5fa", bg: "rgba(96,165,250,0.1)", border: "rgba(96,165,250,0.25)" },
+                  { label: "Secrets", value: leaks, color: "#f472b6", bg: "rgba(244,114,182,0.1)", border: "rgba(244,114,182,0.25)" },
+                  { label: "CVEs", value: data.dependencies?.vulnerabilities?.length ?? data.totalCVEs ?? 0, color: "#c084fc", bg: "rgba(192,132,252,0.1)", border: "rgba(192,132,252,0.25)" },
                 ].map((m, i) => (
-                  <div key={i} className="text-center">
-                    <p className="text-xl font-bold" style={{ color: m.color }}>{m.value}</p>
-                    <p className="text-[10px] text-gray-500">{m.label}</p>
+                  <div
+                    key={i}
+                    className="rounded-xl px-2 py-3 text-center border"
+                    style={{ background: m.value > 0 ? m.bg : "rgba(255,255,255,0.03)", borderColor: m.value > 0 ? m.border : "rgba(255,255,255,0.06)" }}
+                  >
+                    <p className="text-2xl font-black leading-none" style={{ color: m.value > 0 ? m.color : "#6b7280" }}>{m.value}</p>
+                    <p className="text-[10px] text-gray-500 mt-1.5 uppercase tracking-wide">{m.label}</p>
                   </div>
                 ))}
               </div>
             </div>
-          </motion.div>
-        )}
+          </div>
+        </motion.div>
+
+        {/* Plain-English summary — what's wrong and what to do, in human terms */}
+        <PlainSummaryCard s={plainSummary} />
 
         {/* Action buttons */}
         <div className="flex flex-wrap gap-3 mb-8">
@@ -1187,17 +1295,17 @@ export default function ReportPage() {
               <button
                 key={tab.id}
                 onClick={() => setActiveTab(tab.id)}
-                className={`flex items-center gap-2 px-4 py-2.5 rounded-xl text-sm font-medium whitespace-nowrap transition-all ${
+                className={`flex items-center gap-2 px-4 py-2.5 rounded-xl text-sm font-medium whitespace-nowrap transition-all border ${
                   activeTab === tab.id
-                    ? "bg-white/10 border border-white/15 text-white"
-                    : "text-gray-500 hover:text-gray-300 hover:bg-white/5"
+                    ? "bg-amber-500/10 border-amber-500/30 text-amber-200"
+                    : "border-transparent text-gray-500 hover:text-gray-300 hover:bg-white/5"
                 }`}
               >
                 <span>{tab.icon}</span>
                 <span>{tab.label}</span>
                 {tab.count > 0 && (
                   <span className={`text-xs px-1.5 py-0.5 rounded-md ${
-                    activeTab === tab.id ? "bg-white/10" : "bg-white/5"
+                    activeTab === tab.id ? "bg-amber-500/20 text-amber-200" : "bg-white/5"
                   }`}>{tab.count}</span>
                 )}
               </button>
@@ -1218,6 +1326,14 @@ export default function ReportPage() {
                         {vuln.severity.toUpperCase()}
                       </span>
                       <span className="font-semibold">{vuln.type}</span>
+                      {vuln.verified && (
+                        <span
+                          title={vuln.verifyReason || "Confirmed present in your code by a second-pass review"}
+                          className="px-2 py-0.5 rounded-md text-[10px] font-bold border border-emerald-500/40 bg-emerald-500/10 text-emerald-300 inline-flex items-center gap-1"
+                        >
+                          ✓ VERIFIED
+                        </span>
+                      )}
                     </div>
                     <span className="text-xs text-gray-500 font-mono">{vuln.file}{vuln.line ? `:${vuln.line}` : ""}</span>
                   </div>

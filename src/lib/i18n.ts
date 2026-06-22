@@ -35,7 +35,7 @@ export const translations: Record<Lang, Record<string, string>> = {
     "scan.note": "Works with any live site (Vercel, Netlify, Cloudflare, Railway) or public GitHub repo.",
     "scan.private": "connect your platform",
     "scan.divider": "or connect for auto-deploy",
-    "scan.footer": "Free scan shows a summary. Full report + auto-fix from $9 in crypto.",
+    "scan.footer": "Free scan shows a summary. Full report + auto-fix from $5 in crypto.",
 
     // Features
     "features.title": "Everything to secure your app",
@@ -225,7 +225,7 @@ export const translations: Record<Lang, Record<string, string>> = {
     "scan.note": "Funciona con cualquier sitio (Vercel, Netlify, Cloudflare, Railway) o repositorio GitHub publico.",
     "scan.private": "conecta tu plataforma",
     "scan.divider": "o conecta para despliegue automatico",
-    "scan.footer": "El escaneo gratis muestra un resumen. Informe completo + correccion auto desde $9 en crypto.",
+    "scan.footer": "El escaneo gratis muestra un resumen. Informe completo + correccion auto desde $5 en crypto.",
 
     // Features
     "features.title": "Todo para asegurar tu app",

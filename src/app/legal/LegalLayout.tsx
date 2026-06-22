@@ -13,7 +13,7 @@ export function LegalLayout({
   return (
     <div className="relative min-h-screen bg-grid noise text-white">
       <div className="fixed inset-0 aurora pointer-events-none" />
-      <header className="sticky top-0 z-50 border-b border-white/5 backdrop-blur-xl bg-[#030712]/70">
+      <header className="sticky top-0 z-50 border-b border-white/5 backdrop-blur-xl bg-[#0c0a09]/70">
         <div className="max-w-3xl mx-auto px-6 h-16 flex items-center justify-between">
           <a href="/" aria-label="OverMCP home">
             <Logo markClass="w-8 h-8" textClass="text-lg" />

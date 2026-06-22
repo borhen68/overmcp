@@ -10,7 +10,7 @@ export function Mark({ size }: { size: number }) {
     width: dot,
     height: dot,
     borderRadius: dot,
-    background: "#04130d",
+    background: "#0c0a09",
     left: Math.round((cx / 40) * s - dot / 2),
     top: Math.round((cy / 40) * s - dot / 2),
   });
@@ -23,7 +23,7 @@ export function Mark({ size }: { size: number }) {
         width: s,
         height: s,
         borderRadius: Math.round(s * 0.28),
-        background: "linear-gradient(135deg, #34d399 0%, #10b981 55%, #0d9488 100%)",
+        background: "linear-gradient(135deg, #fbbf24 0%, #f59e0b 55%, #d97706 100%)",
       }}
     >
       {/* connecting bar between the two lower nodes */}
@@ -32,7 +32,7 @@ export function Mark({ size }: { size: number }) {
           position: "absolute",
           height: bar,
           width: Math.round((13 / 40) * s),
-          background: "#04130d",
+          background: "#0c0a09",
           borderRadius: bar,
           left: Math.round((13.5 / 40) * s),
           top: Math.round((24 / 40) * s - bar / 2),

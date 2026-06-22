@@ -14,6 +14,12 @@ const securityHeaders = [
 
 const nextConfig: NextConfig = {
   poweredByHeader: false,
+  compress: true,
+  // Tree-shake heavy client libraries so only the used parts ship to the
+  // browser — cuts the framer-motion JS that delays the homepage's load.
+  experimental: {
+    optimizePackageImports: ["framer-motion"],
+  },
   async headers() {
     return [
       {

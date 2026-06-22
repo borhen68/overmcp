@@ -37,9 +37,22 @@ export async function initDB() {
       aeo TEXT,
       performance TEXT,
       dependencies TEXT,
+      secrets TEXT,
+      accessibility TEXT,
+      tech_stack TEXT,
+      progress TEXT,
       error TEXT
     )
   `);
+
+  // Idempotent migration for databases created before these columns existed.
+  for (const col of ["secrets", "accessibility", "tech_stack", "progress"]) {
+    try {
+      await db.execute(`ALTER TABLE scans ADD COLUMN ${col} TEXT`);
+    } catch {
+      // Column already exists — ignore.
+    }
+  }
 
   await db.execute(`
     CREATE TABLE IF NOT EXISTS users (
@@ -86,6 +99,7 @@ export async function updateScanDB(
     aeo?: string;
     performance?: string;
     dependencies?: string;
+    progress?: string;
     error?: string;
   }
 ) {
@@ -103,6 +117,7 @@ export async function updateScanDB(
   if (updates.aeo !== undefined) { setClauses.push("aeo = ?"); args.push(updates.aeo); }
   if (updates.performance !== undefined) { setClauses.push("performance = ?"); args.push(updates.performance); }
   if (updates.dependencies !== undefined) { setClauses.push("dependencies = ?"); args.push(updates.dependencies); }
+  if (updates.progress !== undefined) { setClauses.push("progress = ?"); args.push(updates.progress); }
   if (updates.error !== undefined) { setClauses.push("error = ?"); args.push(updates.error); }
 
   if (setClauses.length === 0) return;
@@ -123,6 +138,11 @@ export async function getScanById(id: string) {
   if (result.rows.length === 0) return null;
   const row = result.rows[0];
 
+  const parse = (v: unknown) => {
+    if (typeof v !== "string" || v.length === 0) return null;
+    try { return JSON.parse(v); } catch { return null; }
+  };
+
   return {
     id: row.id as string,
     createdAt: row.created_at as string,
@@ -134,13 +154,90 @@ export async function getScanById(id: string) {
     email: row.email as string | null,
     url: row.url as string | null,
     platform: row.platform as string | null,
-    files: row.files ? JSON.parse(row.files as string) : [],
-    result: row.result ? JSON.parse(row.result as string) : null,
-    aeo: row.aeo ? JSON.parse(row.aeo as string) : null,
-    performance: row.performance ? JSON.parse(row.performance as string) : null,
-    dependencies: row.dependencies ? JSON.parse(row.dependencies as string) : null,
+    files: parse(row.files) || [],
+    result: parse(row.result),
+    aeo: parse(row.aeo),
+    performance: parse(row.performance),
+    dependencies: parse(row.dependencies),
+    secrets: parse(row.secrets),
+    accessibility: parse(row.accessibility),
+    techStack: parse(row.tech_stack),
+    progress: (row.progress as string | null) || undefined,
     error: row.error as string | null,
   };
+}
+
+// Awaited full upsert — the single source of truth for serverless persistence.
+export async function upsertScan(scan: {
+  id: string;
+  createdAt: string;
+  status: string;
+  paid: boolean;
+  tier: string;
+  paymentId?: string | null;
+  invoiceUrl?: string | null;
+  email?: string | null;
+  url?: string | null;
+  platform?: string | null;
+  files?: unknown;
+  result?: unknown;
+  aeo?: unknown;
+  performance?: unknown;
+  dependencies?: unknown;
+  secrets?: unknown;
+  accessibility?: unknown;
+  techStack?: unknown;
+  progress?: string | null;
+  error?: string | null;
+}) {
+  const j = (v: unknown) => (v === undefined || v === null ? null : JSON.stringify(v));
+  await db.execute({
+    sql: `INSERT INTO scans (
+        id, created_at, status, paid, tier, payment_id, invoice_url, email, url, platform,
+        files, result, aeo, performance, dependencies, secrets, accessibility, tech_stack, progress, error
+      ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+      ON CONFLICT(id) DO UPDATE SET
+        status = excluded.status,
+        paid = excluded.paid,
+        tier = excluded.tier,
+        payment_id = excluded.payment_id,
+        invoice_url = excluded.invoice_url,
+        email = excluded.email,
+        url = excluded.url,
+        platform = excluded.platform,
+        files = excluded.files,
+        result = excluded.result,
+        aeo = excluded.aeo,
+        performance = excluded.performance,
+        dependencies = excluded.dependencies,
+        secrets = excluded.secrets,
+        accessibility = excluded.accessibility,
+        tech_stack = excluded.tech_stack,
+        progress = excluded.progress,
+        error = excluded.error`,
+    args: [
+      scan.id,
+      scan.createdAt,
+      scan.status,
+      scan.paid ? 1 : 0,
+      scan.tier,
+      scan.paymentId ?? null,
+      scan.invoiceUrl ?? null,
+      scan.email ?? null,
+      scan.url ?? null,
+      scan.platform ?? null,
+      j(scan.files),
+      j(scan.result),
+      j(scan.aeo),
+      j(scan.performance),
+      j(scan.dependencies),
+      j(scan.secrets),
+      j(scan.accessibility),
+      j(scan.techStack),
+      scan.progress ?? null,
+      scan.error ?? null,
+    ],
+  });
 }
 
 export async function getRecentScans(limit = 20) {

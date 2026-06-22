@@ -5,7 +5,7 @@ import { CVEResult } from "./dependencies";
 import { SecretsResult } from "./secrets";
 import { AccessibilityResult } from "./accessibility";
 import { TechStackResult } from "./techstack";
-import { createScan, updateScanDB, getScanById, initDB } from "./db";
+import { createScan, updateScanDB, getScanById, initDB, upsertScan } from "./db";
 
 export interface ScanRecord {
   id: string;
@@ -26,6 +26,7 @@ export interface ScanRecord {
   secrets?: SecretsResult;
   accessibility?: AccessibilityResult;
   techStack?: TechStackResult;
+  progress?: string;
   error?: string;
 }
 
@@ -49,7 +50,10 @@ export function getScan(id: string): ScanRecord | undefined {
 
 export async function getScanWithDB(id: string): Promise<ScanRecord | undefined> {
   const cached = scans.get(id);
-  if (cached) return cached;
+  // Return cached records EXCEPT while still scanning — a stale cached
+  // "scanning" record would freeze the progress indicator (and, on a cold
+  // poller instance, could hide the eventual done/error). Re-read those.
+  if (cached && cached.status !== "scanning") return cached;
 
   await ensureDB();
   if (!dbReady) return undefined;
@@ -74,9 +78,14 @@ export async function getScanWithDB(id: string): Promise<ScanRecord | undefined>
       aeo: row.aeo || undefined,
       performance: row.performance || undefined,
       dependencies: row.dependencies || undefined,
+      secrets: row.secrets || undefined,
+      accessibility: row.accessibility || undefined,
+      techStack: row.techStack || undefined,
+      progress: row.progress || undefined,
       error: row.error || undefined,
     };
-    scans.set(id, record);
+    // Don't cache in-progress scans — we want each poll to see fresh progress.
+    if (record.status !== "scanning") scans.set(id, record);
     return record;
   } catch {
     return undefined;
@@ -90,6 +99,21 @@ export function setScan(id: string, record: ScanRecord): void {
     if (!dbReady) return;
     createScan({ id, url: record.url, platform: record.platform, email: record.email }).catch(() => {});
   });
+}
+
+// Awaited persistence of the full in-memory record. Must be awaited inside
+// background tasks (e.g. within `after()`) so results survive on serverless,
+// where the function may freeze the moment the awaited work resolves.
+export async function flushScan(id: string): Promise<void> {
+  const record = scans.get(id);
+  if (!record) return;
+  await ensureDB();
+  if (!dbReady) return;
+  try {
+    await upsertScan(record);
+  } catch {
+    // DB unavailable — in-memory remains the fallback.
+  }
 }
 
 export function updateScan(
@@ -115,6 +139,7 @@ export function updateScan(
     if (updates.aeo !== undefined) dbUpdates.aeo = JSON.stringify(updates.aeo);
     if (updates.performance !== undefined) dbUpdates.performance = JSON.stringify(updates.performance);
     if (updates.dependencies !== undefined) dbUpdates.dependencies = JSON.stringify(updates.dependencies);
+    if (updates.progress !== undefined) dbUpdates.progress = updates.progress;
     if (updates.error !== undefined) dbUpdates.error = updates.error;
 
     updateScanDB(id, dbUpdates as Parameters<typeof updateScanDB>[1]).catch(() => {});

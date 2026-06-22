@@ -14,7 +14,7 @@ export default function Icon() {
           height: "100%",
           alignItems: "center",
           justifyContent: "center",
-          background: "#030712",
+          background: "#0c0a09",
         }}
       >
         <Mark size={30} />

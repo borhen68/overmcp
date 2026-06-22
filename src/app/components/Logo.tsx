@@ -11,9 +11,9 @@ export function LogoMark({ className = "w-9 h-9" }: { className?: string }) {
     >
       <defs>
         <linearGradient id="omcp-grad" x1="0" y1="0" x2="40" y2="40" gradientUnits="userSpaceOnUse">
-          <stop stopColor="#34d399" />
-          <stop offset="0.55" stopColor="#10b981" />
-          <stop offset="1" stopColor="#0d9488" />
+          <stop stopColor="#fbbf24" />
+          <stop offset="0.5" stopColor="#f59e0b" />
+          <stop offset="1" stopColor="#d97706" />
         </linearGradient>
       </defs>
       {/* Shield */}
@@ -51,7 +51,7 @@ export function Logo({
     <span className={`inline-flex items-center gap-2.5 ${className}`}>
       <LogoMark className={markClass} />
       <span className={`font-semibold tracking-tight ${textClass}`}>
-        Over<span className="text-emerald-400">MCP</span>
+        Over<span className="text-amber-grad">MCP</span>
       </span>
     </span>
   );

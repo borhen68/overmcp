@@ -66,7 +66,7 @@ export default function BulkScanPage() {
       <header className="relative z-10 border-b border-white/5">
         <div className="max-w-7xl mx-auto px-6 py-5 flex items-center justify-between">
           <a href="/" className="flex items-center gap-2">
-            <div className="w-8 h-8 rounded-lg bg-gradient-to-br from-green-400 to-emerald-600 flex items-center justify-center">
+            <div className="w-8 h-8 rounded-lg bg-gradient-to-br from-amber-400 to-amber-600 flex items-center justify-center">
               <span className="text-white font-bold text-sm">VS</span>
             </div>
             <span className="text-lg font-semibold tracking-tight">OverMCP</span>
@@ -91,7 +91,7 @@ export default function BulkScanPage() {
               onChange={(e) => setUrls(e.target.value)}
               placeholder={"myapp.vercel.app\nclient-site.netlify.app\nanother-project.com"}
               rows={8}
-              className="w-full px-4 py-3 rounded-xl bg-white/[0.03] border border-white/10 text-white placeholder-gray-600 focus:outline-none focus:border-green-500/50 transition-colors font-mono text-sm resize-none"
+              className="w-full px-4 py-3 rounded-xl bg-white/[0.03] border border-white/10 text-white placeholder-gray-600 focus:outline-none focus:border-amber-500/50 transition-colors font-mono text-sm resize-none"
             />
 
             {error && (
@@ -101,7 +101,7 @@ export default function BulkScanPage() {
             <button
               type="submit"
               disabled={scanning || !urls.trim()}
-              className="mt-4 w-full py-3.5 rounded-xl font-semibold bg-gradient-to-r from-green-500 to-emerald-600 text-white disabled:opacity-50 transition-all hover:shadow-lg hover:shadow-green-500/20"
+              className="mt-4 w-full py-3.5 rounded-xl font-semibold bg-gradient-to-r from-amber-500 to-amber-600 text-white disabled:opacity-50 transition-all hover:shadow-lg hover:shadow-amber-500/20"
             >
               {scanning ? "Starting scans..." : `Scan ${urls.split("\n").filter((u) => u.trim().length > 3).length || 0} sites`}
             </button>
