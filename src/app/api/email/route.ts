@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
-import { getScan, updateScan } from "@/lib/store";
+import { getScan, getScanWithDB, updateScan } from "@/lib/store";
 import { sendReportReady } from "@/lib/email";
 
 export async function POST(request: NextRequest) {
@@ -10,7 +10,9 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: "Valid email required" }, { status: 400 });
     }
 
-    const scan = getScan(scanId);
+    // Fall back to the DB — on serverless the scan was almost certainly created
+    // on a different instance, so an in-memory-only lookup 404s spuriously.
+    const scan = getScan(scanId) || (await getScanWithDB(scanId));
     if (!scan) {
       return NextResponse.json({ error: "Scan not found" }, { status: 404 });
     }
