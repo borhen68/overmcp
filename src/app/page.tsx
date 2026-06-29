@@ -662,8 +662,8 @@ export default function Home() {
               a: "Yes. The $5 tier creates a GitHub PR with all fixes applied to your repo. The $19 tier deploys the fixed version directly to Vercel, Netlify, Cloudflare Pages, or Railway — one click and your live site is secured.",
             },
             {
-              q: "Why crypto payments only?",
-              a: "We accept Bitcoin, Ethereum, USDT, and 100+ cryptocurrencies via NOWPayments. This makes OverMCP accessible globally without geographic payment restrictions or requiring a credit card.",
+              q: "What payment methods do you accept?",
+              a: "We accept all major credit and debit cards, Apple Pay, Google Pay, and PayPal through Paddle. Payments are secure, instant, and globally accessible.",
             },
             {
               q: "What platforms do you support?",

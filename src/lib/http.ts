@@ -1,7 +1,7 @@
 import axios from "axios";
 
 // Shared HTTP client with a hard timeout so no external API (Vercel, Netlify,
-// Cloudflare, Railway, NOWPayments, etc.) can hang a request indefinitely.
+// Cloudflare, Railway, Paddle, etc.) can hang a request indefinitely.
 const http = axios.create({
   timeout: 30_000,
   headers: { "User-Agent": "OverMCP/1.0" },

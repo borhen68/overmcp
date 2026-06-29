@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import { Inter, Instrument_Serif, JetBrains_Mono } from "next/font/google";
+import PaddleLoader from "@/components/PaddleLoader";
 import "./globals.css";
 
 const inter = Inter({
@@ -29,7 +30,7 @@ export const metadata: Metadata = {
     template: "%s | OverMCP",
   },
   description:
-    "Scan any website for vulnerabilities, fix security issues, optimize SEO & AI visibility, audit performance, and detect dependency CVEs. Built for apps made with Cursor, Bolt, v0, and Lovable. Auto-fix & deploy in one click. Pay with crypto.",
+    "Scan any website for vulnerabilities, fix security issues, optimize SEO & AI visibility, audit performance, and detect dependency CVEs. Built for apps made with Cursor, Bolt, v0, and Lovable. Auto-fix & deploy in one click.",
   keywords: [
     "security scanner",
     "vibe coding security",
@@ -48,7 +49,6 @@ export const metadata: Metadata = {
     "dependency CVE scanner",
     "core web vitals audit",
     "auto fix deploy",
-    "crypto payment SaaS",
     "vibe coded app security",
     "AI generated code security",
   ],
@@ -59,7 +59,7 @@ export const metadata: Metadata = {
   openGraph: {
     title: "OverMCP — Secure Your Vibe-Coded App in 60 Seconds",
     description:
-      "Paste any URL. Get a full security audit with OWASP Top 10 scan, SEO fixes, AI visibility score, performance report, and CVE scan. Auto-fix & deploy. Pay with crypto.",
+      "Paste any URL. Get a full security audit with OWASP Top 10 scan, SEO fixes, AI visibility score, performance report, and CVE scan. Auto-fix & deploy.",
     type: "website",
     siteName: "OverMCP",
     url: baseUrl,
@@ -207,10 +207,10 @@ export default function RootLayout({
                 },
                 {
                   "@type": "Question",
-                  name: "Why crypto payments?",
+                  name: "What payment methods are accepted?",
                   acceptedAnswer: {
                     "@type": "Answer",
-                    text: "OverMCP accepts cryptocurrency payments via NOWPayments, supporting Bitcoin, Ethereum, USDT, and 100+ other currencies. This makes the service accessible globally without geographic payment restrictions.",
+                    text: "OverMCP accepts all major credit and debit cards, Apple Pay, Google Pay, and PayPal through Paddle. Payments are secure, instant, and globally accessible.",
                   },
                 },
                 {
@@ -228,6 +228,7 @@ export default function RootLayout({
       </head>
       <body className="min-h-full flex flex-col bg-[#0c0a09] text-stone-100">
         {children}
+        <PaddleLoader />
       </body>
     </html>
   );

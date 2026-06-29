@@ -1,10 +1,10 @@
 import { NextRequest, NextResponse } from "next/server";
-import { createPayment } from "@/lib/payments";
+import { createTransaction } from "@/lib/payments";
 import { getScan, getScanWithDB, updateScan } from "@/lib/store";
 
-// Maps every tier name the UI can send (both canonical and the pricing-card
-// names) to its price and the canonical tier we store. This fixes the bug
-// where "deep-scan"/"continuous" silently fell back to the Fix price.
+export const dynamic = "force-dynamic";
+export const maxDuration = 30;
+
 const TIER_CONFIG: Record<string, { price: number; tier: "fix" | "deploy"; description: string }> = {
   fix: { price: 5, tier: "fix", description: "OverMCP — Full Report + Fixed Code + AEO" },
   "quick-fix": { price: 5, tier: "fix", description: "OverMCP — Full Report + Fixed Code + AEO" },
@@ -22,9 +22,6 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: "Missing scanId" }, { status: 400 });
     }
 
-    // Look in memory first, then the DB — on serverless the scan was very
-    // likely created on a different instance, so an in-memory-only lookup
-    // would 404 here even though the scan exists.
     const scan = getScan(scanId) || (await getScanWithDB(scanId));
     if (!scan) {
       return NextResponse.json({ error: "Scan not found. Try re-running the scan." }, { status: 404 });
@@ -34,7 +31,7 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: "This report is already unlocked." }, { status: 400 });
     }
 
-    if (!process.env.NOWPAYMENTS_API_KEY) {
+    if (!process.env.PADDLE_API_KEY) {
       return NextResponse.json(
         { error: "Payments are not configured yet. Please try again later." },
         { status: 503 }
@@ -42,24 +39,15 @@ export async function POST(request: NextRequest) {
     }
 
     const config = TIER_CONFIG[tier] || TIER_CONFIG.fix;
-    const payment = await createPayment(scanId, config.price);
-
-    if (!payment?.invoice_url) {
-      return NextResponse.json(
-        { error: "Could not start checkout. Please try again." },
-        { status: 502 }
-      );
-    }
+    const transaction = await createTransaction(scanId, config.price, config.description);
 
     updateScan(scanId, {
       tier: config.tier,
-      paymentId: payment.payment_id,
-      invoiceUrl: payment.invoice_url,
+      paymentId: transaction.id,
     });
 
     return NextResponse.json({
-      invoiceUrl: payment.invoice_url,
-      paymentId: payment.payment_id,
+      transactionId: transaction.id,
       amount: config.price,
       tier: config.tier,
       description: config.description,

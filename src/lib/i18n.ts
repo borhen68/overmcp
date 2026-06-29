@@ -35,7 +35,7 @@ export const translations: Record<Lang, Record<string, string>> = {
     "scan.note": "Works with any live site (Vercel, Netlify, Cloudflare, Railway) or public GitHub repo.",
     "scan.private": "connect your platform",
     "scan.divider": "or connect for auto-deploy",
-    "scan.footer": "Free scan shows a summary. Full report + auto-fix from $5 in crypto.",
+    "scan.footer": "Free scan shows a summary. Full report + auto-fix from $5.",
 
     // Features
     "features.title": "Everything to secure your app",
@@ -48,11 +48,11 @@ export const translations: Record<Lang, Record<string, string>> = {
     "howItWorks.step2.title": "AI Scans Everything",
     "howItWorks.step2.desc": "Security, SEO, AEO, performance, and dependency CVEs — all analyzed in parallel.",
     "howItWorks.step3.title": "Fix & Deploy",
-    "howItWorks.step3.desc": "Pay with crypto. We fix the code and deploy to Vercel, Netlify, or open a PR.",
+    "howItWorks.step3.desc": "Pay securely. We fix the code and deploy to Vercel, Netlify, or open a PR.",
 
     // Pricing
-    "pricing.title": "Simple pricing, pay with crypto",
-    "pricing.subtitle": "No subscriptions. No credit card. Just crypto.",
+    "pricing.title": "Simple pricing, pay once",
+    "pricing.subtitle": "No subscriptions. No hidden fees. Just one-time payments.",
     "pricing.mostPopular": "Most Popular",
 
     // CTA
@@ -73,7 +73,7 @@ export const translations: Record<Lang, Record<string, string>> = {
     "footer.terms": "Terms of Service",
     "footer.privacy": "Privacy Policy",
     "footer.copyright": "Secure your AI-built apps.",
-    "footer.crypto": "Accepts BTC, ETH, USDT & 100+ cryptocurrencies",
+    "footer.crypto": "Accepts all major cards, Apple Pay, Google Pay & PayPal",
 
     // Report page
     "report.title": "Your Security Report",
@@ -130,7 +130,7 @@ export const translations: Record<Lang, Record<string, string>> = {
     "scan.note": "Fonctionne avec tout site (Vercel, Netlify, Cloudflare, Railway) ou depot GitHub public.",
     "scan.private": "connectez votre plateforme",
     "scan.divider": "ou connectez pour un deploiement auto",
-    "scan.footer": "Le scan gratuit montre un resume. Rapport complet + correction auto des 9$ en crypto.",
+    "scan.footer": "Le scan gratuit montre un resume. Rapport complet + correction auto des 5$.",
 
     // Features
     "features.title": "Tout pour securiser votre app",
@@ -143,11 +143,11 @@ export const translations: Record<Lang, Record<string, string>> = {
     "howItWorks.step2.title": "L'IA analyse tout",
     "howItWorks.step2.desc": "Securite, SEO, AEO, performance et CVE des dependances — tout en parallele.",
     "howItWorks.step3.title": "Corriger & deployer",
-    "howItWorks.step3.desc": "Payez en crypto. On corrige le code et on deploie sur Vercel, Netlify ou on ouvre une PR.",
+    "howItWorks.step3.desc": "Payez securise. On corrige le code et on deploie sur Vercel, Netlify ou on ouvre une PR.",
 
     // Pricing
-    "pricing.title": "Tarification simple, paiement en crypto",
-    "pricing.subtitle": "Pas d'abonnement. Pas de carte bancaire. Juste du crypto.",
+    "pricing.title": "Tarification simple, paiement unique",
+    "pricing.subtitle": "Pas d'abonnement. Pas de frais caches. Juste un paiement unique.",
     "pricing.mostPopular": "Le plus populaire",
 
     // CTA
@@ -168,7 +168,7 @@ export const translations: Record<Lang, Record<string, string>> = {
     "footer.terms": "Conditions d'utilisation",
     "footer.privacy": "Politique de confidentialite",
     "footer.copyright": "Securisez vos apps construites par IA.",
-    "footer.crypto": "Accepte BTC, ETH, USDT et plus de 100 cryptomonnaies",
+    "footer.crypto": "Accepte toutes les cartes, Apple Pay, Google Pay & PayPal",
 
     // Report page
     "report.title": "Votre rapport de securite",
@@ -225,7 +225,7 @@ export const translations: Record<Lang, Record<string, string>> = {
     "scan.note": "Funciona con cualquier sitio (Vercel, Netlify, Cloudflare, Railway) o repositorio GitHub publico.",
     "scan.private": "conecta tu plataforma",
     "scan.divider": "o conecta para despliegue automatico",
-    "scan.footer": "El escaneo gratis muestra un resumen. Informe completo + correccion auto desde $5 en crypto.",
+    "scan.footer": "El escaneo gratis muestra un resumen. Informe completo + correccion auto desde $5.",
 
     // Features
     "features.title": "Todo para asegurar tu app",
@@ -238,11 +238,11 @@ export const translations: Record<Lang, Record<string, string>> = {
     "howItWorks.step2.title": "La IA analiza todo",
     "howItWorks.step2.desc": "Seguridad, SEO, AEO, rendimiento y CVE de dependencias — todo analizado en paralelo.",
     "howItWorks.step3.title": "Corregir y desplegar",
-    "howItWorks.step3.desc": "Paga con crypto. Corregimos el codigo y desplegamos en Vercel, Netlify o abrimos un PR.",
+    "howItWorks.step3.desc": "Paga de forma segura. Corregimos el codigo y desplegamos en Vercel, Netlify o abrimos un PR.",
 
     // Pricing
-    "pricing.title": "Precios simples, pago en crypto",
-    "pricing.subtitle": "Sin suscripciones. Sin tarjeta de credito. Solo crypto.",
+    "pricing.title": "Precios simples, pago unico",
+    "pricing.subtitle": "Sin suscripciones. Sin tarifas ocultas. Solo pagos unicos.",
     "pricing.mostPopular": "Mas popular",
 
     // CTA
@@ -263,7 +263,7 @@ export const translations: Record<Lang, Record<string, string>> = {
     "footer.terms": "Terminos de servicio",
     "footer.privacy": "Politica de privacidad",
     "footer.copyright": "Asegura tus apps hechas con IA.",
-    "footer.crypto": "Acepta BTC, ETH, USDT y mas de 100 criptomonedas",
+    "footer.crypto": "Acepta todas las tarjetas, Apple Pay, Google Pay & PayPal",
 
     // Report page
     "report.title": "Tu informe de seguridad",

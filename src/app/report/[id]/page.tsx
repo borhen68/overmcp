@@ -372,9 +372,15 @@ export default function ReportPage() {
         body: JSON.stringify({ scanId: id, tier }),
       });
       const json = await res.json();
-      if (res.ok && json.invoiceUrl) {
-        window.location.href = json.invoiceUrl;
-        return; // keep the button in "Redirecting…" while the browser navigates
+      if (res.ok && json.transactionId) {
+        // Open Paddle.js checkout overlay
+        const Paddle = (window as unknown as { Paddle?: { Checkout: { open: (opts: Record<string, unknown>) => void }; Environment: { set: (env: string) => void }; initialize: (opts: Record<string, unknown>) => void } }).Paddle;
+        if (Paddle) {
+          Paddle.Checkout.open({ transactionId: json.transactionId });
+          setPaying(false);
+          return;
+        }
+        throw new Error("Payment library not loaded. Please refresh and try again.");
       }
       throw new Error(json.error || "Could not start checkout. Please try again.");
     } catch (e: unknown) {
@@ -938,7 +944,7 @@ export default function ReportPage() {
                 <h4 className="font-bold text-xl mb-1">Fix</h4>
                 <div className="flex items-baseline gap-1 mb-1">
                   <span className="text-4xl font-black">$5</span>
-                  <span className="text-sm text-gray-500">in crypto</span>
+                  <span className="text-sm text-gray-500">one-time</span>
                 </div>
                 <p className="text-sm text-gray-500 mb-6">Full vulnerability report with AI-generated fix code for every issue</p>
                 <ul className="text-sm text-gray-300 space-y-3 mb-8 flex-1">
@@ -975,7 +981,7 @@ export default function ReportPage() {
                 <h4 className="font-bold text-xl mb-1">Deploy</h4>
                 <div className="flex items-baseline gap-1 mb-1">
                   <span className="text-4xl font-black text-amber-400">$19</span>
-                  <span className="text-sm text-gray-500">in crypto</span>
+                  <span className="text-sm text-gray-500">one-time</span>
                 </div>
                 <p className="text-sm text-gray-500 mb-6">We fix and deploy the secured version for you, plus deeper analysis</p>
                 <ul className="text-sm text-gray-300 space-y-3 mb-8 flex-1">
@@ -1028,7 +1034,7 @@ export default function ReportPage() {
             <div className="flex flex-wrap items-center justify-center gap-x-8 gap-y-3 mt-8 text-xs text-gray-500">
               <span className="flex items-center gap-2">
                 <svg className="w-4 h-4 text-gray-600" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M9 12.75L11.25 15 15 9.75M21 12a9 9 0 11-18 0 9 9 0 0118 0z" /></svg>
-                BTC, ETH, USDT & 100+ coins
+                Card, Apple Pay, Google Pay & PayPal
               </span>
               <span className="flex items-center gap-2">
                 <svg className="w-4 h-4 text-gray-600" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M3.75 13.5l10.5-11.25L12 10.5h8.25L9.75 21.75 12 13.5H3.75z" /></svg>

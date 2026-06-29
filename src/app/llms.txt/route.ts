@@ -26,8 +26,8 @@ OverMCP scans any website or GitHub repo for security vulnerabilities, SEO issue
 ## Pricing
 
 - Free: scan summary with scores
-- $5 (crypto): full report + fixes + GitHub PR
-- $19 (crypto): full report + fixes + auto-deploy + rescan monitoring
+- $5: full report + fixes + GitHub PR
+- $19: full report + fixes + auto-deploy + rescan monitoring
 
 ## Links
 

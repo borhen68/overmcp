@@ -14,8 +14,9 @@ const CHECKS: EnvCheck[] = [
   { name: "TURSO_AUTH_TOKEN", level: "recommended", feature: "Remote Turso auth (required unless using a local file DB)" },
   { name: "RESEND_API_KEY", level: "recommended", feature: "Report + alert emails" },
   { name: "CRON_SECRET", level: "recommended", feature: "Protects the /api/monitor/run cron endpoint" },
-  { name: "NOWPAYMENTS_API_KEY", level: "recommended", feature: "Crypto payments" },
-  { name: "NOWPAYMENTS_IPN_SECRET", level: "recommended", feature: "Payment webhook signature verification" },
+  { name: "PADDLE_API_KEY", level: "recommended", feature: "Paddle payments (card checkout)" },
+  { name: "PADDLE_WEBHOOK_SECRET", level: "recommended", feature: "Paddle webhook signature verification" },
+  { name: "NEXT_PUBLIC_PADDLE_CLIENT_TOKEN", level: "recommended", feature: "Paddle.js client-side checkout" },
   { name: "GITHUB_CLIENT_ID", level: "recommended", feature: "GitHub OAuth" },
   { name: "GITHUB_CLIENT_SECRET", level: "recommended", feature: "GitHub OAuth" },
 ];

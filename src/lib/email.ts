@@ -59,7 +59,7 @@ export async function sendReportReady(to: string, scanId: string, url: string, s
         </a>
 
         <p style="color: #6b7280; font-size: 12px; text-align: center; margin-top: 24px;">
-          Unlock all ${summary.totalIssues} issues with fixed code for just $5 in crypto.
+          Unlock all ${summary.totalIssues} issues with fixed code for just $5.
         </p>
       </div>
     `,

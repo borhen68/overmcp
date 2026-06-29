@@ -1,90 +1,111 @@
-import http from "./http";
+import crypto from "crypto";
 
-const NOWPAYMENTS_API = "https://api.nowpayments.io/v1";
+const PADDLE_API = process.env.PADDLE_SANDBOX === "true"
+  ? "https://sandbox-api.paddle.com"
+  : "https://api.paddle.com";
 
-interface CreatePaymentResponse {
-  payment_id: string;
-  payment_status: string;
-  pay_address: string;
-  pay_amount: number;
-  pay_currency: string;
-  order_id: string;
-  invoice_url?: string;
+interface CreateTransactionResponse {
+  id: string;
+  status: string;
+  checkout_id?: string | null;
 }
 
-export async function createPayment(
-  orderId: string,
-  priceUsd: number
-): Promise<CreatePaymentResponse> {
-  const response = await http.post(
-    `${NOWPAYMENTS_API}/invoice`,
-    {
-      price_amount: priceUsd,
-      price_currency: "usd",
-      order_id: orderId,
-      order_description: "OverMCP - Full Security & SEO Report",
-      ipn_callback_url: `${process.env.NEXT_PUBLIC_APP_URL}/api/payment/webhook`,
-      success_url: `${process.env.NEXT_PUBLIC_APP_URL}/report/${orderId}?paid=true`,
-      cancel_url: `${process.env.NEXT_PUBLIC_APP_URL}/report/${orderId}?paid=false`,
+export async function createTransaction(
+  scanId: string,
+  priceUsd: number,
+  description: string
+): Promise<CreateTransactionResponse> {
+  const apiKey = process.env.PADDLE_API_KEY;
+  if (!apiKey) throw new Error("PADDLE_API_KEY is not set");
+
+  const response = await fetch(`${PADDLE_API}/transactions`, {
+    method: "POST",
+    headers: {
+      Authorization: `Bearer ${apiKey}`,
+      "Content-Type": "application/json",
     },
-    {
-      headers: {
-        "x-api-key": process.env.NOWPAYMENTS_API_KEY!,
-        "Content-Type": "application/json",
-      },
-    }
-  );
+    body: JSON.stringify({
+      items: [
+        {
+          quantity: 1,
+          price: {
+            description,
+            name: description,
+            type: "one_time",
+            unit_price: {
+              amount: priceUsd.toFixed(2),
+              currency_code: "USD",
+            },
+            product: {
+              name: "OverMCP",
+              type: "service",
+            },
+          },
+        },
+      ],
+      collection_mode: "automatic",
+      currency_code: "USD",
+      custom_data: { scanId },
+    }),
+  });
 
-  return response.data;
-}
-
-export async function verifyPayment(paymentId: string): Promise<boolean> {
-  const response = await http.get(
-    `${NOWPAYMENTS_API}/payment/${paymentId}`,
-    {
-      headers: {
-        "x-api-key": process.env.NOWPAYMENTS_API_KEY!,
-      },
-    }
-  );
-
-  return (
-    response.data.payment_status === "finished" ||
-    response.data.payment_status === "confirmed"
-  );
-}
-
-// NOWPayments signs the IPN body over its JSON with keys sorted alphabetically
-// (recursively). We must reproduce that exact ordering or the HMAC never
-// matches and every webhook is rejected as "Invalid signature".
-function sortKeysDeep(value: unknown): unknown {
-  if (Array.isArray(value)) return value.map(sortKeysDeep);
-  if (value && typeof value === "object") {
-    return Object.keys(value as Record<string, unknown>)
-      .sort()
-      .reduce((acc, key) => {
-        acc[key] = sortKeysDeep((value as Record<string, unknown>)[key]);
-        return acc;
-      }, {} as Record<string, unknown>);
+  if (!response.ok) {
+    const errorBody = await response.text();
+    throw new Error(`Paddle API error ${response.status}: ${errorBody}`);
   }
-  return value;
+
+  const data = await response.json();
+  return data.data;
+}
+
+export async function getTransaction(
+  transactionId: string
+): Promise<{ status: string; customData?: { scanId?: string } }> {
+  const apiKey = process.env.PADDLE_API_KEY;
+  if (!apiKey) throw new Error("PADDLE_API_KEY is not set");
+
+  const response = await fetch(`${PADDLE_API}/transactions/${transactionId}`, {
+    headers: { Authorization: `Bearer ${apiKey}` },
+  });
+
+  if (!response.ok) {
+    throw new Error(`Paddle API error ${response.status}`);
+  }
+
+  const data = await response.json();
+  return {
+    status: data.data.status,
+    customData: data.data.custom_data,
+  };
 }
 
 export function verifyWebhookSignature(
-  payload: string,
-  signature: string
+  rawBody: string,
+  signatureHeader: string
 ): boolean {
-  const secret = process.env.NOWPAYMENTS_IPN_SECRET;
-  if (!secret || !signature) return false;
+  const secret = process.env.PADDLE_WEBHOOK_SECRET;
+  if (!secret || !signatureHeader) return false;
 
-  const crypto = require("crypto");
-  const sorted = JSON.stringify(sortKeysDeep(JSON.parse(payload)));
-  const hmac = crypto.createHmac("sha512", secret);
-  hmac.update(sorted);
+  // Paddle-Signature header format: ts=<timestamp>;h1=<hex_signature>
+  const parts = signatureHeader.split(";");
+  let ts = "";
+  let h1 = "";
+  for (const part of parts) {
+    const [key, value] = part.split("=");
+    if (key === "ts") ts = value;
+    if (key === "h1") h1 = value;
+  }
+
+  if (!ts || !h1) return false;
+
+  // Build signed payload: timestamp + ":" + raw body
+  const signedPayload = `${ts}:${rawBody}`;
+  const hmac = crypto.createHmac("sha256", secret);
+  hmac.update(signedPayload);
   const calculatedSignature = hmac.digest("hex");
 
-  // Constant-time compare to avoid leaking the signature via timing.
+  // Constant-time compare
   const a = Buffer.from(calculatedSignature, "hex");
-  const b = Buffer.from(signature, "hex");
+  const b = Buffer.from(h1, "hex");
   return a.length === b.length && crypto.timingSafeEqual(a, b);
 }

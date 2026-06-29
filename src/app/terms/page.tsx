@@ -35,8 +35,7 @@ export default function TermsPage() {
       <section>
         <h2>3. Payments</h2>
         <p>
-          Paid tiers are charged in cryptocurrency via NOWPayments. Crypto payments are generally
-          non-reversible; refunds, if any, are at our discretion. Prices are shown before purchase.
+          Paid tiers are charged via Paddle, our payment processor. Paddle supports all major credit and debit cards, Apple Pay, Google Pay, and PayPal. Refunds, if any, are at our discretion. Prices are shown before purchase.
         </p>
       </section>
 
