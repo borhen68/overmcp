@@ -188,6 +188,21 @@ export default async function BlogPostPage({ params }: Props) {
     image: `${baseUrl}/opengraph-image`,
   };
 
+  const breadcrumbJsonLd = {
+    "@context": "https://schema.org",
+    "@type": "BreadcrumbList",
+    itemListElement: [
+      { "@type": "ListItem", position: 1, name: "Home", item: baseUrl },
+      { "@type": "ListItem", position: 2, name: "Blog", item: `${baseUrl}/blog` },
+      {
+        "@type": "ListItem",
+        position: 3,
+        name: post.title,
+        item: `${baseUrl}/blog/${post.slug}`,
+      },
+    ],
+  };
+
   // Pull the post's "## FAQ" Q&A pairs into FAQPage structured data — this is
   // what earns featured snippets and lets ChatGPT/Claude quote the answers.
   const faqs = extractFaqs(post.content);
@@ -207,6 +222,7 @@ export default async function BlogPostPage({ params }: Props) {
       <div className="fixed inset-0 spotlight pointer-events-none" />
 
       <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }} />
+      <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(breadcrumbJsonLd) }} />
       {faqJsonLd && (
         <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(faqJsonLd) }} />
       )}

@@ -135,6 +135,64 @@ const BLOG_TOPICS: BlogTopic[] = [
   { query: "How to secure webhook endpoints in a SaaS app", keyword: "secure webhook endpoints" },
   { query: "How to fix open redirect vulnerabilities in Next.js", keyword: "open redirect next.js" },
   { query: "Why AI coding tools skip security (and how to catch it)", keyword: "ai coding tools security risks" },
+
+  // --- Per-tool security guides (capture every "is X safe / secure X" search) ---
+  { query: "Is Replit Agent generated code secure?", keyword: "is replit agent code secure" },
+  { query: "Is Windsurf (Codeium) generated code safe to ship?", keyword: "is windsurf code safe" },
+  { query: "Are ChatGPT-generated apps secure?", keyword: "chatgpt generated app security" },
+  { query: "Is code from Claude artifacts safe to deploy?", keyword: "claude artifacts security" },
+  { query: "How to secure a Base44 app", keyword: "base44 app security" },
+  { query: "How to secure a Replit-hosted app", keyword: "replit app security" },
+  { query: "How to secure an app built with GitHub Copilot", keyword: "github copilot code security" },
+
+  // --- Provider-specific secret leaks (high commercial intent) ---
+  { query: "How to find a leaked Supabase service_role key", keyword: "leaked supabase service role key" },
+  { query: "How to find a leaked Stripe secret key in your code", keyword: "leaked stripe secret key" },
+  { query: "How to find a leaked OpenAI API key", keyword: "leaked openai api key" },
+  { query: "How to fix an exposed Firebase API key", keyword: "exposed firebase api key" },
+  { query: "What to do when your AWS access key is leaked", keyword: "leaked aws access key" },
+
+  // --- Platform security configuration ---
+  { query: "How to set up Supabase Row Level Security correctly", keyword: "supabase row level security" },
+  { query: "How to write secure Firebase security rules", keyword: "firebase security rules" },
+  { query: "How to store secrets safely in Vercel environment variables", keyword: "vercel environment variables secrets" },
+  { query: "How to add authentication to a Next.js app the right way", keyword: "nextjs authentication best practices" },
+  { query: "How to secure a Netlify-deployed site", keyword: "netlify site security" },
+
+  // --- More OWASP / vulnerability classes ---
+  { query: "What is IDOR and how do I fix it in my app?", keyword: "idor vulnerability fix" },
+  { query: "How to prevent mass assignment vulnerabilities", keyword: "mass assignment vulnerability" },
+  { query: "How to securely handle JWT tokens in a web app", keyword: "jwt security best practices" },
+  { query: "How to prevent CSRF attacks in a SaaS app", keyword: "prevent csrf attack" },
+  { query: "How to prevent path traversal vulnerabilities", keyword: "path traversal vulnerability" },
+  { query: "What is prompt injection and how do I defend against it?", keyword: "prompt injection defense" },
+  { query: "How to securely store passwords (hashing done right)", keyword: "secure password hashing" },
+  { query: "How to prevent broken access control in your API", keyword: "broken access control fix" },
+
+  // --- AEO / GEO (answer & generative engine optimization) ---
+  { query: "How to rank in Google AI Overviews", keyword: "rank in google ai overviews" },
+  { query: "How to get cited by Perplexity AI", keyword: "get cited by perplexity" },
+  { query: "What is Generative Engine Optimization (GEO)?", keyword: "what is generative engine optimization" },
+  { query: "How to add structured data (JSON-LD) to a Next.js site", keyword: "json-ld structured data nextjs" },
+  { query: "robots.txt vs llms.txt: what's the difference?", keyword: "robots.txt vs llms.txt" },
+  { query: "How to make your docs easy for AI to cite", keyword: "ai citable content" },
+
+  // --- Commercial-intent comparisons & alternatives ---
+  { query: "Snyk vs OverMCP: which security scanner should you use?", keyword: "snyk alternative vibe coding" },
+  { query: "Best security scanners for indie hackers in 2025", keyword: "best security scanner indie hackers" },
+  { query: "Free vs paid website security scanners compared", keyword: "free vs paid security scanner" },
+  { query: "Semgrep vs automated AI security scanning", keyword: "semgrep alternative" },
+  { query: "How much does a security audit cost for a small SaaS?", keyword: "saas security audit cost" },
+
+  // --- Practical how-to (long-tail, high volume) ---
+  { query: "How to check if my website has been hacked", keyword: "check if website hacked" },
+  { query: "How to do a security audit of your own website", keyword: "diy website security audit" },
+  { query: "How to add security headers to a Vercel deployment", keyword: "security headers vercel" },
+  { query: "How to scan a GitHub repo for secrets", keyword: "scan github repo for secrets" },
+  { query: "How to fix npm audit vulnerabilities", keyword: "fix npm audit vulnerabilities" },
+  { query: "How to set up a Content Security Policy without breaking your site", keyword: "content security policy setup" },
+  { query: "How to handle a data breach as a solo founder", keyword: "data breach response solo founder" },
+  { query: "Pre-launch security checklist for AI-built MVPs", keyword: "pre-launch security checklist mvp" },
 ];
 
 export async function generateBlogPost(): Promise<BlogPost | null> {
