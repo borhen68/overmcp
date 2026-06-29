@@ -31,19 +31,18 @@ export async function createTransaction(
           price: {
             description,
             name: description,
-            type: "one_time",
             unit_price: {
-              amount: priceUsd.toFixed(2),
+              amount: Math.round(priceUsd * 100).toString(),
               currency_code: "USD",
             },
             product: {
               name: "OverMCP",
-              type: "service",
+              tax_category: "standard",
+              description,
             },
           },
         },
       ],
-      collection_mode: "automatic",
       currency_code: "USD",
       custom_data: { scanId },
     }),
