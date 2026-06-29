@@ -1,6 +1,11 @@
 import { NextRequest, NextResponse } from "next/server";
 import { generateBlogPost } from "@/lib/blog";
 
+// Generating 12 posts means 12 sequential DeepSeek calls, so allow the longest
+// execution window the platform permits (Vercel caps this per plan).
+export const maxDuration = 300;
+export const dynamic = "force-dynamic";
+
 async function handleGenerate(req: NextRequest) {
   const authHeader = req.headers.get("authorization");
   const cronSecret = process.env.CRON_SECRET;
@@ -13,7 +18,7 @@ async function handleGenerate(req: NextRequest) {
   const posts = [];
 
   const errors: string[] = [];
-  for (let i = 0; i < Math.min(count, 5); i++) {
+  for (let i = 0; i < Math.min(count, 12); i++) {
     try {
       const post = await generateBlogPost();
       if (post) posts.push({ id: post.id, slug: post.slug, title: post.title });
