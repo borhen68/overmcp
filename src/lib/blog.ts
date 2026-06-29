@@ -195,6 +195,45 @@ const BLOG_TOPICS: BlogTopic[] = [
   { query: "Pre-launch security checklist for AI-built MVPs", keyword: "pre-launch security checklist mvp" },
 ];
 
+// When the curated BLOG_TOPICS pool is exhausted, ask the model to invent a
+// fresh, specific, non-duplicate search query + primary keyword. This keeps the
+// generation engine supplied indefinitely no matter how high the daily count is.
+async function generateFreshTopic(existing: string[]): Promise<BlogTopic | null> {
+  const content = await callDeepSeek(
+    [
+      {
+        role: "system",
+        content: `You are an SEO/AEO strategist for OverMCP (overmcp.com), a security scanner for "vibe-coded" apps built with AI tools (Cursor, Bolt.new, v0, Lovable, Replit Agent, Windsurf, GitHub Copilot, Claude, etc.).
+
+Invent ONE fresh, highly specific, long-tail blog topic that real indie developers actually search on Google or ask ChatGPT/Perplexity. It must concern security, SEO, AEO/GEO, performance, dependency CVEs, or safe deployment of AI-built apps. It needs clear search intent and a distinctive primary keyword.
+
+Return ONLY valid JSON:
+{
+  "query": "the exact natural-language search query a user would type",
+  "keyword": "the distinctive long-tail primary keyword, lowercase, 2-6 words"
+}`,
+      },
+      {
+        role: "user",
+        content: `Do NOT repeat or pick anything semantically similar to these already-covered topics:\n${
+          existing.length ? existing.join("\n") : "none yet"
+        }`,
+      },
+    ],
+    400
+  );
+  if (!content) return null;
+  try {
+    const t = JSON.parse(content);
+    if (t.query && t.keyword) {
+      return { query: String(t.query), keyword: String(t.keyword) };
+    }
+  } catch {
+    /* malformed JSON — caller falls back to the generic prompt */
+  }
+  return null;
+}
+
 export async function generateBlogPost(): Promise<BlogPost | null> {
   await initBlogTable();
 
@@ -211,9 +250,23 @@ export async function generateBlogPost(): Promise<BlogPost | null> {
     (t) => !existingHaystack.includes(t.keyword.toLowerCase())
   );
 
-  const suggestedTopic = topicPool.length > 0
-    ? topicPool[Math.floor(Math.random() * topicPool.length)]
-    : null;
+  // Prefer the curated, vetted pool. Once it's drained, fall back to AI-invented
+  // fresh topics (retried a few times to avoid accidental duplicates) so a high
+  // daily count never starves the engine or produces repeats.
+  let suggestedTopic: BlogTopic | null =
+    topicPool.length > 0
+      ? topicPool[Math.floor(Math.random() * topicPool.length)]
+      : null;
+
+  if (!suggestedTopic) {
+    for (let attempt = 0; attempt < 3; attempt++) {
+      const fresh = await generateFreshTopic(existingTitles);
+      if (fresh && !existingHaystack.includes(fresh.keyword.toLowerCase())) {
+        suggestedTopic = fresh;
+        break;
+      }
+    }
+  }
 
   const content = await callDeepSeek([
     {
