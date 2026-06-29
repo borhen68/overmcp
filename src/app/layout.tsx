@@ -21,7 +21,7 @@ const jetbrainsMono = JetBrains_Mono({
   weight: ["400", "500", "600", "700"],
 });
 
-const baseUrl = process.env.NEXT_PUBLIC_APP_URL || "https://overmcp.com";
+const baseUrl = process.env.NEXT_PUBLIC_APP_URL || "https://www.overmcp.com";
 
 export const metadata: Metadata = {
   title: {
@@ -82,6 +82,9 @@ export const metadata: Metadata = {
       "max-image-preview": "large",
       "max-snippet": -1,
     },
+  },
+  verification: {
+    google: process.env.GOOGLE_SITE_VERIFICATION,
   },
   category: "technology",
 };
@@ -150,6 +153,24 @@ export default function RootLayout({
                     "Everything in Fix plus auto-deploy to any platform, llms.txt generated, weekly rescan monitoring, priority support",
                 },
               ],
+            }),
+          }}
+        />
+        <script
+          type="application/ld+json"
+          dangerouslySetInnerHTML={{
+            __html: JSON.stringify({
+              "@context": "https://schema.org",
+              "@type": "WebSite",
+              name: "OverMCP",
+              url: baseUrl,
+              description:
+                "AI-powered security scanner for vibe-coded apps. Scans for OWASP Top 10 vulnerabilities, SEO issues, AEO gaps, performance, and dependency CVEs.",
+              potentialAction: {
+                "@type": "SearchAction",
+                target: `${baseUrl}/?q={search_term_string}`,
+                "query-input": "required name=search_term_string",
+              },
             }),
           }}
         />

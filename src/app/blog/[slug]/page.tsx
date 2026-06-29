@@ -13,7 +13,7 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
   try { post = await getPostBySlug(slug); } catch { /* DB not ready */ }
   if (!post) return { title: "Post Not Found" };
 
-  const baseUrl = process.env.NEXT_PUBLIC_APP_URL || "https://overmcp.com";
+  const baseUrl = process.env.NEXT_PUBLIC_APP_URL || "https://www.overmcp.com";
 
   return {
     title: post.metaTitle,
@@ -167,6 +167,8 @@ export default async function BlogPostPage({ params }: Props) {
     related = allPosts.filter((p) => p.slug !== post.slug).slice(0, 3);
   } catch { /* ignore */ }
 
+  const baseUrl = process.env.NEXT_PUBLIC_APP_URL || "https://www.overmcp.com";
+
   const jsonLd = {
     "@context": "https://schema.org",
     "@type": "BlogPosting",
@@ -175,14 +177,15 @@ export default async function BlogPostPage({ params }: Props) {
     datePublished: post.publishedAt,
     dateModified: post.publishedAt,
     keywords: post.tags.join(", "),
-    author: { "@type": "Organization", name: "OverMCP", url: "https://overmcp.com" },
+    author: { "@type": "Organization", name: "OverMCP", url: baseUrl },
     publisher: {
       "@type": "Organization",
       name: "OverMCP",
-      url: "https://overmcp.com",
-      logo: { "@type": "ImageObject", url: "https://overmcp.com/icon" },
+      url: baseUrl,
+      logo: { "@type": "ImageObject", url: `${baseUrl}/icon` },
     },
-    mainEntityOfPage: `https://overmcp.com/blog/${post.slug}`,
+    mainEntityOfPage: `${baseUrl}/blog/${post.slug}`,
+    image: `${baseUrl}/opengraph-image`,
   };
 
   // Pull the post's "## FAQ" Q&A pairs into FAQPage structured data — this is

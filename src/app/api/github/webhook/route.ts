@@ -149,7 +149,7 @@ function buildComment(a: AnalysisLike, fileCount: number, scanId: string): strin
     totalCVEs: cves.length,
   });
 
-  const reportUrl = `${process.env.NEXT_PUBLIC_APP_URL || "https://overmcp.com"}/report/${scanId}`;
+  const reportUrl = `${process.env.NEXT_PUBLIC_APP_URL || "https://www.overmcp.com"}/report/${scanId}`;
   const total = vulns.length + leaks.length + cves.length;
 
   if (total === 0) {
@@ -201,7 +201,7 @@ function buildComment(a: AnalysisLike, fileCount: number, scanId: string): strin
 
   lines.push(`👉 **[View the full report & one-click fixes →](${reportUrl})**`);
   lines.push(``);
-  lines.push(`<sub>Automated by [OverMCP](${process.env.NEXT_PUBLIC_APP_URL || "https://overmcp.com"}). We only comment — we never push to your branch or merge.</sub>`);
+  lines.push(`<sub>Automated by [OverMCP](${process.env.NEXT_PUBLIC_APP_URL || "https://www.overmcp.com"}). We only comment — we never push to your branch or merge.</sub>`);
   return lines.join("\n");
 }
 

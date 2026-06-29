@@ -31,9 +31,9 @@ OverMCP scans any website or GitHub repo for security vulnerabilities, SEO issue
 
 ## Links
 
-- Homepage: https://overmcp.com
-- Dashboard: https://overmcp.com/dashboard
-- Connect platforms: https://overmcp.com/connect
+- Homepage: https://www.overmcp.com
+- Dashboard: https://www.overmcp.com/dashboard
+- Connect platforms: https://www.overmcp.com/connect
 `;
 
   return new NextResponse(content, {
