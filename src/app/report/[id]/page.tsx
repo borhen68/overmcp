@@ -374,7 +374,7 @@ export default function ReportPage() {
       const json = await res.json();
       if (res.ok && json.transactionId) {
         // Open Paddle.js checkout overlay
-        const Paddle = (window as unknown as { Paddle?: { Checkout: { open: (opts: Record<string, unknown>) => void }; Environment: { set: (env: string) => void }; initialize: (opts: Record<string, unknown>) => void } }).Paddle;
+        const Paddle = (window as unknown as { Paddle?: { Checkout: { open: (opts: Record<string, unknown>) => void }; Environment: { set: (env: string) => void }; Initialize: (opts: Record<string, unknown>) => void } }).Paddle;
         if (Paddle) {
           Paddle.Checkout.open({ transactionId: json.transactionId });
           setPaying(false);
