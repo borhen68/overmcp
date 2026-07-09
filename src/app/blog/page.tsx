@@ -1,28 +1,15 @@
-"use client";
-
 import Link from "next/link";
-import { useEffect, useState } from "react";
+import { getSeoPosts } from "@/lib/blog";
 
-interface BlogPost {
-  id: string;
-  slug: string;
-  title: string;
-  excerpt: string;
-  tags: string[];
-  publishedAt: string;
-}
+export const dynamic = "force-dynamic";
 
-export default function BlogPage() {
-  const [posts, setPosts] = useState<BlogPost[]>([]);
-  const [loading, setLoading] = useState(true);
-
-  useEffect(() => {
-    fetch("/api/blog")
-      .then((r) => r.json())
-      .then((data) => setPosts(data))
-      .catch(() => setPosts([]))
-      .finally(() => setLoading(false));
-  }, []);
+export default async function BlogPage() {
+  let posts: Awaited<ReturnType<typeof getSeoPosts>> = [];
+  try {
+    posts = await getSeoPosts(100);
+  } catch {
+    posts = [];
+  }
 
   return (
     <div className="relative min-h-screen bg-grid noise">
@@ -51,11 +38,7 @@ export default function BlogPage() {
           </p>
         </div>
 
-        {loading ? (
-          <div className="text-center py-20">
-            <div className="w-6 h-6 border-2 border-green-400/30 border-t-green-400 rounded-full animate-spin mx-auto" />
-          </div>
-        ) : posts.length === 0 ? (
+        {posts.length === 0 ? (
           <div className="text-center py-20">
             <p className="text-gray-500 text-lg">First posts coming soon...</p>
           </div>

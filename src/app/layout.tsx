@@ -25,41 +25,62 @@ const jetbrainsMono = JetBrains_Mono({
 const baseUrl = process.env.NEXT_PUBLIC_APP_URL || "https://www.overmcp.com";
 
 export const metadata: Metadata = {
+  applicationName: "OverMCP",
+  authors: [{ name: "OverMCP Team", url: baseUrl }],
+  creator: "OverMCP",
+  publisher: "OverMCP",
   title: {
-    default: "OverMCP — Security Scanner for Vibe-Coded Apps",
+    default: "OverMCP — AI App Security Scanner for Vibe-Coded Apps",
     template: "%s | OverMCP",
   },
   description:
-    "Scan any website for vulnerabilities, fix security issues, optimize SEO & AI visibility, audit performance, and detect dependency CVEs. Built for apps made with Cursor, Bolt, v0, and Lovable. Auto-fix & deploy in one click.",
+    "Free AI app security scanner for Cursor, Bolt.new, v0, Lovable, Replit, and Windsurf apps. Find OWASP vulnerabilities, leaked secrets, dependency CVEs, SEO issues, AEO gaps, and deployment risks.",
   keywords: [
+    "AI app security scanner",
+    "AI generated code security scanner",
+    "vibe coding security scanner",
     "security scanner",
     "vibe coding security",
     "cursor security audit",
+    "cursor security scanner",
     "bolt.new vulnerability scanner",
+    "bolt.new security scanner",
     "v0 security check",
+    "v0 security scanner",
     "lovable app security",
+    "lovable security scanner",
+    "replit agent security",
+    "windsurf code security",
     "AI code audit",
     "OWASP scanner",
+    "OWASP Top 10 scanner",
     "website vulnerability scanner",
+    "free website vulnerability scanner",
+    "secret leak scanner",
+    "API key leak scanner",
+    "dependency CVE scanner",
+    "npm vulnerability scanner",
+    "security headers checker",
+    "SSL certificate checker",
     "SEO audit tool",
     "AEO optimization",
+    "GEO optimization",
     "AI visibility",
     "answer engine optimization",
+    "generative engine optimization",
     "llms.txt generator",
-    "dependency CVE scanner",
     "core web vitals audit",
     "auto fix deploy",
     "vibe coded app security",
-    "AI generated code security",
   ],
   metadataBase: new URL(baseUrl),
   alternates: {
     canonical: baseUrl,
   },
   openGraph: {
-    title: "OverMCP — Secure Your Vibe-Coded App in 60 Seconds",
+    title: "OverMCP — AI App Security Scanner for Vibe-Coded Apps",
     description:
-      "Paste any URL. Get a full security audit with OWASP Top 10 scan, SEO fixes, AI visibility score, performance report, and CVE scan. Auto-fix & deploy.",
+      "Paste any URL. Find OWASP vulnerabilities, leaked secrets, CVEs, SEO issues, AEO/GEO gaps, and deployment risks in apps built with AI coding tools.",
     type: "website",
     siteName: "OverMCP",
     url: baseUrl,
@@ -100,24 +121,35 @@ export default function RootLayout({
       className={`${inter.variable} ${instrumentSerif.variable} ${jetbrainsMono.variable} h-full antialiased`}
     >
       <head>
-        <link rel="canonical" href={baseUrl} />
         <meta name="theme-color" content="#0c0a09" />
         <script
           type="application/ld+json"
           dangerouslySetInnerHTML={{
             __html: JSON.stringify({
               "@context": "https://schema.org",
+              "@id": `${baseUrl}/#software`,
               "@type": "SoftwareApplication",
               name: "OverMCP",
+              alternateName: "OverMCP AI App Security Scanner",
               applicationCategory: "SecurityApplication",
+              applicationSubCategory: "Website vulnerability scanner",
               operatingSystem: "Web",
               url: baseUrl,
               description:
-                "AI-powered security scanner for vibe-coded apps. Scans for OWASP Top 10 vulnerabilities, optimizes SEO & AEO, audits Core Web Vitals, checks dependencies for CVEs, and auto-deploys fixes.",
+                "AI-powered security scanner for vibe-coded apps built with Cursor, Bolt.new, v0, Lovable, Replit, Windsurf, and other AI coding tools. Scans for OWASP Top 10 vulnerabilities, leaked secrets, SEO and AEO/GEO gaps, Core Web Vitals, dependency CVEs, and deployment risks.",
+              keywords:
+                "AI app security scanner, vibe coding security, Cursor security scanner, Bolt.new vulnerability scanner, Lovable security scanner, OWASP scanner, secret leak scanner, AEO, GEO, llms.txt",
+              audience: {
+                "@type": "Audience",
+                audienceType:
+                  "Indie developers, solo founders, agencies, and AI coding tool users",
+              },
               featureList: [
                 "OWASP Top 10 vulnerability scanning",
+                "Secret leak and API key exposure detection",
                 "SEO audit and optimization",
-                "AI Engine Optimization (AEO)",
+                "Answer Engine Optimization (AEO)",
+                "Generative Engine Optimization (GEO)",
                 "Core Web Vitals performance audit",
                 "Dependency CVE scanning",
                 "Auto-fix via GitHub PR",
@@ -133,6 +165,7 @@ export default function RootLayout({
                   name: "Free Scan",
                   price: "0",
                   priceCurrency: "USD",
+                  url: baseUrl,
                   description:
                     "Vulnerability count, risk summary, SEO & AEO scores, 1 issue preview",
                 },
@@ -141,6 +174,7 @@ export default function RootLayout({
                   name: "Fix",
                   price: "5",
                   priceCurrency: "USD",
+                  url: `${baseUrl}/#pricing`,
                   description:
                     "Full report with all vulnerabilities, fixed code snippets, SEO + AEO optimization, performance report, dependency audit, auto PR on GitHub",
                 },
@@ -149,6 +183,7 @@ export default function RootLayout({
                   name: "Deploy",
                   price: "19",
                   priceCurrency: "USD",
+                  url: `${baseUrl}/#pricing`,
                   description:
                     "Everything in Fix plus auto-deploy to any platform, llms.txt generated, weekly rescan monitoring, priority support",
                 },
@@ -161,16 +196,51 @@ export default function RootLayout({
           dangerouslySetInnerHTML={{
             __html: JSON.stringify({
               "@context": "https://schema.org",
+              "@id": `${baseUrl}/#website`,
               "@type": "WebSite",
               name: "OverMCP",
               url: baseUrl,
               description:
-                "AI-powered security scanner for vibe-coded apps. Scans for OWASP Top 10 vulnerabilities, SEO issues, AEO gaps, performance, and dependency CVEs.",
-              potentialAction: {
-                "@type": "SearchAction",
-                target: `${baseUrl}/?q={search_term_string}`,
-                "query-input": "required name=search_term_string",
-              },
+                "AI-powered security scanner and security education site for vibe-coded apps. Covers OWASP vulnerabilities, leaked secrets, CVEs, SEO, AEO, GEO, and safe deployment.",
+              publisher: { "@id": `${baseUrl}/#organization` },
+              hasPart: [
+                { "@type": "WebPage", name: "Free scanner", url: baseUrl },
+                { "@type": "WebPage", name: "Blog", url: `${baseUrl}/blog` },
+                {
+                  "@type": "WebPage",
+                  name: "Security headers checker",
+                  url: `${baseUrl}/tools/headers`,
+                },
+                {
+                  "@type": "WebPage",
+                  name: "Secret leak scanner",
+                  url: `${baseUrl}/tools/leak`,
+                },
+              ],
+            }),
+          }}
+        />
+        <script
+          type="application/ld+json"
+          dangerouslySetInnerHTML={{
+            __html: JSON.stringify({
+              "@context": "https://schema.org",
+              "@id": `${baseUrl}/#organization`,
+              "@type": "Organization",
+              name: "OverMCP",
+              url: baseUrl,
+              logo: `${baseUrl}/icon`,
+              description:
+                "OverMCP helps developers secure AI-built web apps before launch.",
+              knowsAbout: [
+                "AI-generated code security",
+                "Vibe coding security",
+                "OWASP Top 10",
+                "Secret leak detection",
+                "Dependency CVE scanning",
+                "Answer Engine Optimization",
+                "Generative Engine Optimization",
+              ],
             }),
           }}
         />
@@ -210,7 +280,7 @@ export default function RootLayout({
                   name: "What payment methods are accepted?",
                   acceptedAnswer: {
                     "@type": "Answer",
-                    text: "OverMCP accepts all major credit and debit cards, Apple Pay, Google Pay, and PayPal through Paddle. Payments are secure, instant, and globally accessible.",
+                    text: "OverMCP accepts crypto payments including Bitcoin, Ethereum, USDT, and many other cryptocurrencies. This keeps checkout accessible globally without requiring a credit card.",
                   },
                 },
                 {

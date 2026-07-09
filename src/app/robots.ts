@@ -8,7 +8,7 @@ export default function robots(): MetadataRoute.Robots {
       {
         userAgent: "*",
         allow: "/",
-        disallow: ["/api/", "/report/"],
+        disallow: ["/api/"],
       },
       // OpenAI: training crawler, live-search crawler, and in-chat fetcher
       { userAgent: "GPTBot", allow: "/" },

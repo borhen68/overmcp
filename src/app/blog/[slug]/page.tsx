@@ -1,4 +1,4 @@
-import { getPostBySlug, getAllPosts } from "@/lib/blog";
+import { getPostBySlug, getSeoPosts } from "@/lib/blog";
 import { notFound } from "next/navigation";
 import Link from "next/link";
 import type { Metadata } from "next";
@@ -18,13 +18,18 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
   return {
     title: post.metaTitle,
     description: post.metaDescription,
+    keywords: post.tags,
+    authors: [{ name: "OverMCP Team", url: baseUrl }],
+    publisher: "OverMCP",
     openGraph: {
       title: post.metaTitle,
       description: post.metaDescription,
       type: "article",
       publishedTime: post.publishedAt,
+      modifiedTime: post.publishedAt,
       url: `${baseUrl}/blog/${post.slug}`,
       siteName: "OverMCP",
+      images: [`${baseUrl}/opengraph-image`],
     },
     twitter: {
       card: "summary_large_image",
@@ -51,7 +56,7 @@ function MarkdownRenderer({ content }: { content: string }) {
       if (inCodeBlock) {
         elements.push(
           <pre key={i} className="bg-gray-950/80 border border-white/5 rounded-xl p-5 overflow-x-auto my-6">
-            <code className="text-sm text-green-300 font-mono whitespace-pre">{codeLines.join("\n")}</code>
+            <code data-language={codeLanguage || undefined} className="text-sm text-green-300 font-mono whitespace-pre">{codeLines.join("\n")}</code>
           </pre>
         );
         codeLines = [];
@@ -139,8 +144,21 @@ function extractFaqs(content: string): { question: string; answer: string }[] {
 }
 
 function formatInline(text: string): React.ReactNode {
-  const parts = text.split(/(`[^`]+`|\*\*[^*]+\*\*|\*[^*]+\*)/g);
+  const parts = text.split(/(\[[^\]]+\]\((?:https?:\/\/|\/|#)[^)]+\)|`[^`]+`|\*\*[^*]+\*\*|\*[^*]+\*)/g);
   return parts.map((part, i) => {
+    const link = part.match(/^\[([^\]]+)\]\(((?:https?:\/\/|\/|#)[^)]+)\)$/);
+    if (link) {
+      const [, label, href] = link;
+      const className = "text-green-300 underline decoration-green-500/40 underline-offset-4 hover:text-green-200";
+      if (href.startsWith("/")) {
+        return <Link key={i} href={href} className={className}>{formatInline(label)}</Link>;
+      }
+      return (
+        <a key={i} href={href} className={className} target={href.startsWith("http") ? "_blank" : undefined} rel={href.startsWith("http") ? "noopener noreferrer" : undefined}>
+          {formatInline(label)}
+        </a>
+      );
+    }
     if (part.startsWith("**") && part.endsWith("**")) {
       return <strong key={i} className="text-white font-semibold">{part.slice(2, -2)}</strong>;
     }
@@ -161,22 +179,30 @@ export default async function BlogPostPage({ params }: Props) {
 
   if (!post) notFound();
 
-  let related: Awaited<ReturnType<typeof getAllPosts>> = [];
+  let related: Awaited<ReturnType<typeof getSeoPosts>> = [];
   try {
-    const allPosts = await getAllPosts(10);
+    const allPosts = await getSeoPosts(10);
     related = allPosts.filter((p) => p.slug !== post.slug).slice(0, 3);
   } catch { /* ignore */ }
 
   const baseUrl = process.env.NEXT_PUBLIC_APP_URL || "https://www.overmcp.com";
+  const wordCount = post.content.trim().split(/\s+/).filter(Boolean).length;
 
   const jsonLd = {
     "@context": "https://schema.org",
     "@type": "BlogPosting",
+    "@id": `${baseUrl}/blog/${post.slug}#article`,
+    url: `${baseUrl}/blog/${post.slug}`,
     headline: post.title,
     description: post.excerpt,
     datePublished: post.publishedAt,
     dateModified: post.publishedAt,
     keywords: post.tags.join(", "),
+    articleSection: post.tags[0] || "AI app security",
+    wordCount,
+    inLanguage: "en-US",
+    isAccessibleForFree: true,
+    about: post.tags.map((tag) => ({ "@type": "Thing", name: tag })),
     author: { "@type": "Organization", name: "OverMCP", url: baseUrl },
     publisher: {
       "@type": "Organization",
