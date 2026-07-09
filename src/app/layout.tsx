@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import { Inter, Instrument_Serif, JetBrains_Mono } from "next/font/google";
 import PaddleLoader from "@/components/PaddleLoader";
+import { serializeJsonLd } from "@/lib/json-ld";
 import "./globals.css";
 
 const inter = Inter({
@@ -125,7 +126,7 @@ export default function RootLayout({
         <script
           type="application/ld+json"
           dangerouslySetInnerHTML={{
-            __html: JSON.stringify({
+            __html: serializeJsonLd({
               "@context": "https://schema.org",
               "@id": `${baseUrl}/#software`,
               "@type": "SoftwareApplication",
@@ -194,7 +195,7 @@ export default function RootLayout({
         <script
           type="application/ld+json"
           dangerouslySetInnerHTML={{
-            __html: JSON.stringify({
+            __html: serializeJsonLd({
               "@context": "https://schema.org",
               "@id": `${baseUrl}/#website`,
               "@type": "WebSite",
@@ -223,7 +224,7 @@ export default function RootLayout({
         <script
           type="application/ld+json"
           dangerouslySetInnerHTML={{
-            __html: JSON.stringify({
+            __html: serializeJsonLd({
               "@context": "https://schema.org",
               "@id": `${baseUrl}/#organization`,
               "@type": "Organization",
@@ -247,7 +248,7 @@ export default function RootLayout({
         <script
           type="application/ld+json"
           dangerouslySetInnerHTML={{
-            __html: JSON.stringify({
+            __html: serializeJsonLd({
               "@context": "https://schema.org",
               "@type": "FAQPage",
               mainEntity: [
