@@ -5,8 +5,8 @@
       "schedule": "0 8 * * *"
     },
     {
-      "path": "/api/blog/generate?count=12",
-      "schedule": "0 6 * * *"
+      "path": "/api/blog/generate?count=1",
+      "schedule": "0 6-16 * * *"
     }
   ]
 }

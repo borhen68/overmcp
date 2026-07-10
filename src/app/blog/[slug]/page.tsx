@@ -1,10 +1,11 @@
-import { getPostBySlug, getSeoPosts } from "@/lib/blog";
+import { getPostBySlug, getRelatedPosts } from "@/lib/blog";
 import { notFound } from "next/navigation";
 import Link from "next/link";
 import type { Metadata } from "next";
 import { serializeJsonLd } from "@/lib/json-ld";
 
-export const dynamic = "force-dynamic";
+// Cacheable HTML helps Google crawl efficiently; new posts appear within an hour.
+export const revalidate = 3600;
 
 type Props = { params: Promise<{ slug: string }> };
 
@@ -12,16 +13,23 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
   const { slug } = await params;
   let post: Awaited<ReturnType<typeof getPostBySlug>> = null;
   try { post = await getPostBySlug(slug); } catch { /* DB not ready */ }
-  if (!post) return { title: "Post Not Found" };
+  if (!post) {
+    return {
+      title: "Post Not Found",
+      robots: { index: false, follow: true },
+    };
+  }
 
   const baseUrl = process.env.NEXT_PUBLIC_APP_URL || "https://www.overmcp.com";
 
   return {
-    title: post.metaTitle,
+    // absolute avoids the root title template appending " | OverMCP" twice/over-length.
+    title: { absolute: post.metaTitle },
     description: post.metaDescription,
     keywords: post.tags,
     authors: [{ name: "OverMCP Team", url: baseUrl }],
     publisher: "OverMCP",
+    category: "technology",
     openGraph: {
       title: post.metaTitle,
       description: post.metaDescription,
@@ -30,17 +38,73 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
       modifiedTime: post.publishedAt,
       url: `${baseUrl}/blog/${post.slug}`,
       siteName: "OverMCP",
-      images: [`${baseUrl}/opengraph-image`],
+      locale: "en_US",
+      images: [
+        {
+          url: `${baseUrl}/opengraph-image`,
+          width: 1200,
+          height: 630,
+          alt: post.metaTitle,
+        },
+      ],
     },
     twitter: {
       card: "summary_large_image",
       title: post.metaTitle,
       description: post.metaDescription,
+      images: [`${baseUrl}/opengraph-image`],
     },
     alternates: {
       canonical: `${baseUrl}/blog/${post.slug}`,
+      types: {
+        "application/rss+xml": `${baseUrl}/rss.xml`,
+      },
+    },
+    robots: {
+      index: true,
+      follow: true,
+      googleBot: {
+        index: true,
+        follow: true,
+        "max-image-preview": "large",
+        "max-snippet": -1,
+      },
     },
   };
+}
+
+function slugifyHeading(text: string) {
+  return text
+    .toLowerCase()
+    .replace(/[^a-z0-9]+/g, "-")
+    .replace(/^-+|-+$/g, "")
+    .slice(0, 80);
+}
+
+function extractToc(content: string): { id: string; text: string; level: 2 | 3 }[] {
+  const toc: { id: string; text: string; level: 2 | 3 }[] = [];
+  const used = new Set<string>();
+  let inCode = false;
+  for (const line of content.split("\n")) {
+    if (line.startsWith("```")) {
+      inCode = !inCode;
+      continue;
+    }
+    if (inCode) continue;
+    const h2 = line.match(/^##\s+(.+)/);
+    const h3 = line.match(/^###\s+(.+)/);
+    const raw = h2?.[1] || h3?.[1];
+    if (!raw) continue;
+    if (/^faq|frequently asked/i.test(raw) && h2) {
+      // include FAQ in TOC
+    }
+    let id = slugifyHeading(raw);
+    if (!id) continue;
+    if (used.has(id)) id = `${id}-${used.size}`;
+    used.add(id);
+    toc.push({ id, text: raw.trim(), level: h2 ? 2 : 3 });
+  }
+  return toc;
 }
 
 function MarkdownRenderer({ content }: { content: string }) {
@@ -49,6 +113,14 @@ function MarkdownRenderer({ content }: { content: string }) {
   let inCodeBlock = false;
   let codeLines: string[] = [];
   let codeLanguage = "";
+  const usedIds = new Set<string>();
+
+  const headingId = (text: string) => {
+    let id = slugifyHeading(text);
+    if (usedIds.has(id)) id = `${id}-${usedIds.size}`;
+    usedIds.add(id);
+    return id;
+  };
 
   for (let i = 0; i < lines.length; i++) {
     const line = lines[i];
@@ -75,9 +147,25 @@ function MarkdownRenderer({ content }: { content: string }) {
     }
 
     if (line.startsWith("## ")) {
-      elements.push(<h2 key={i} className="text-2xl font-bold mt-10 mb-4">{line.slice(3)}</h2>);
+      const text = line.slice(3);
+      const id = headingId(text);
+      elements.push(
+        <h2 key={i} id={id} className="text-2xl font-bold mt-10 mb-4 scroll-mt-24">
+          <a href={`#${id}`} className="hover:text-green-400 transition-colors no-underline">
+            {text}
+          </a>
+        </h2>
+      );
     } else if (line.startsWith("### ")) {
-      elements.push(<h3 key={i} className="text-xl font-semibold mt-8 mb-3">{line.slice(4)}</h3>);
+      const text = line.slice(4);
+      const id = headingId(text);
+      elements.push(
+        <h3 key={i} id={id} className="text-xl font-semibold mt-8 mb-3 scroll-mt-24">
+          <a href={`#${id}`} className="hover:text-green-400 transition-colors no-underline">
+            {text}
+          </a>
+        </h3>
+      );
     } else if (line.startsWith("- ") || line.startsWith("* ")) {
       elements.push(
         <li key={i} className="text-gray-300 leading-relaxed ml-4 flex items-start gap-2 mb-2">
@@ -180,14 +268,23 @@ export default async function BlogPostPage({ params }: Props) {
 
   if (!post) notFound();
 
-  let related: Awaited<ReturnType<typeof getSeoPosts>> = [];
+  let related: Awaited<ReturnType<typeof getRelatedPosts>> = [];
   try {
-    const allPosts = await getSeoPosts(10);
-    related = allPosts.filter((p) => p.slug !== post.slug).slice(0, 3);
+    related = await getRelatedPosts(post, 4);
   } catch { /* ignore */ }
 
   const baseUrl = process.env.NEXT_PUBLIC_APP_URL || "https://www.overmcp.com";
   const wordCount = post.content.trim().split(/\s+/).filter(Boolean).length;
+  const readingMinutes = Math.max(1, Math.round(wordCount / 220));
+  const toc = extractToc(post.content).filter((t) => t.level === 2).slice(0, 12);
+
+  // Extract the "## Quick answer" block for speakable / AI-citation signals (AEO/GEO).
+  const quickAnswerMatch = post.content.match(
+    /##\s+Quick answer\s*\n+([\s\S]*?)(?=\n##\s+)/i
+  );
+  const quickAnswer = quickAnswerMatch
+    ? quickAnswerMatch[1].replace(/[*`>#]/g, "").replace(/\s+/g, " ").trim().slice(0, 500)
+    : post.excerpt;
 
   const jsonLd = {
     "@context": "https://schema.org",
@@ -196,6 +293,7 @@ export default async function BlogPostPage({ params }: Props) {
     url: `${baseUrl}/blog/${post.slug}`,
     headline: post.title,
     description: post.excerpt,
+    abstract: quickAnswer,
     datePublished: post.publishedAt,
     dateModified: post.publishedAt,
     keywords: post.tags.join(", "),
@@ -204,15 +302,32 @@ export default async function BlogPostPage({ params }: Props) {
     inLanguage: "en-US",
     isAccessibleForFree: true,
     about: post.tags.map((tag) => ({ "@type": "Thing", name: tag })),
-    author: { "@type": "Organization", name: "OverMCP", url: baseUrl },
+    author: {
+      "@type": "Organization",
+      name: "OverMCP",
+      url: baseUrl,
+      "@id": `${baseUrl}/#organization`,
+    },
     publisher: {
       "@type": "Organization",
       name: "OverMCP",
       url: baseUrl,
       logo: { "@type": "ImageObject", url: `${baseUrl}/icon` },
     },
-    mainEntityOfPage: `${baseUrl}/blog/${post.slug}`,
-    image: `${baseUrl}/opengraph-image`,
+    mainEntityOfPage: {
+      "@type": "WebPage",
+      "@id": `${baseUrl}/blog/${post.slug}`,
+    },
+    image: {
+      "@type": "ImageObject",
+      url: `${baseUrl}/opengraph-image`,
+      width: 1200,
+      height: 630,
+    },
+    speakable: {
+      "@type": "SpeakableSpecification",
+      cssSelector: ["h1", "article h2"],
+    },
   };
 
   const breadcrumbJsonLd = {
@@ -282,31 +397,90 @@ export default async function BlogPostPage({ params }: Props) {
 
           <h1 className="text-3xl md:text-4xl font-black tracking-tight mb-4">{post.title}</h1>
 
-          <div className="flex items-center gap-4 mb-10 pb-8 border-b border-white/5">
+          <div className="flex items-center gap-4 mb-8 pb-8 border-b border-white/5">
             <div className="w-8 h-8 rounded-full bg-gradient-to-br from-green-500/20 to-emerald-500/20 border border-green-500/20 flex items-center justify-center">
               <span className="text-xs font-bold text-green-400">O</span>
             </div>
             <div>
               <p className="text-sm font-medium">OverMCP Team</p>
-              <time className="text-xs text-gray-500">
-                {new Date(post.publishedAt).toLocaleDateString("en-US", {
-                  month: "long",
-                  day: "numeric",
-                  year: "numeric",
-                })}
-              </time>
+              <p className="text-xs text-gray-500">
+                <time dateTime={post.publishedAt}>
+                  {new Date(post.publishedAt).toLocaleDateString("en-US", {
+                    month: "long",
+                    day: "numeric",
+                    year: "numeric",
+                  })}
+                </time>
+                <span className="mx-1.5">·</span>
+                <span>{readingMinutes} min read</span>
+                <span className="mx-1.5">·</span>
+                <span>{wordCount.toLocaleString()} words</span>
+              </p>
             </div>
           </div>
+
+          {toc.length >= 3 && (
+            <nav
+              aria-label="Table of contents"
+              className="mb-10 p-5 rounded-xl border border-white/5 bg-white/[0.02]"
+            >
+              <p className="text-xs font-semibold uppercase tracking-wide text-gray-500 mb-3">
+                On this page
+              </p>
+              <ol className="space-y-2">
+                {toc.map((item) => (
+                  <li key={item.id}>
+                    <a
+                      href={`#${item.id}`}
+                      className="text-sm text-gray-400 hover:text-green-400 transition-colors"
+                    >
+                      {item.text}
+                    </a>
+                  </li>
+                ))}
+              </ol>
+            </nav>
+          )}
 
           <MarkdownRenderer content={post.content} />
         </article>
 
+        {/* Commercial internal links — pass PageRank to money pages */}
+        <aside className="mt-12 p-6 rounded-xl border border-white/5 bg-white/[0.02]">
+          <p className="text-sm font-semibold text-white mb-3">Free security tools</p>
+          <ul className="flex flex-wrap gap-2 text-sm">
+            <li>
+              <Link href="/free-website-vulnerability-scanner" className="text-green-400/90 hover:text-green-300 underline-offset-2 hover:underline">
+                Vulnerability scanner
+              </Link>
+            </li>
+            <li className="text-gray-600">·</li>
+            <li>
+              <Link href="/tools/headers" className="text-green-400/90 hover:text-green-300 underline-offset-2 hover:underline">
+                Headers checker
+              </Link>
+            </li>
+            <li className="text-gray-600">·</li>
+            <li>
+              <Link href="/tools/leak" className="text-green-400/90 hover:text-green-300 underline-offset-2 hover:underline">
+                Secret leak scanner
+              </Link>
+            </li>
+            <li className="text-gray-600">·</li>
+            <li>
+              <Link href="/ai-app-security-scanner" className="text-green-400/90 hover:text-green-300 underline-offset-2 hover:underline">
+                AI app scanner
+              </Link>
+            </li>
+          </ul>
+        </aside>
+
         {/* CTA */}
-        <div className="mt-16 p-8 rounded-2xl text-center" style={{ background: "linear-gradient(135deg, rgba(245,158,11,0.06) 0%, rgba(245,158,11,0.02) 100%)", border: "1px solid rgba(245,158,11,0.2)" }}>
-          <h3 className="text-xl font-bold mb-2">Is your app secure?</h3>
-          <p className="text-gray-400 text-sm mb-5">Free scan in 30 seconds. No signup needed.</p>
+        <div className="mt-10 p-8 rounded-2xl text-center" style={{ background: "linear-gradient(135deg, rgba(245,158,11,0.06) 0%, rgba(245,158,11,0.02) 100%)", border: "1px solid rgba(245,158,11,0.2)" }}>
+          <h2 className="text-xl font-bold mb-2">Is your app secure?</h2>
+          <p className="text-gray-400 text-sm mb-5">Free website vulnerability scan in 30 seconds. No signup needed.</p>
           <Link
-            href="/"
+            href="/#scan"
             className="inline-block px-6 py-3 rounded-xl font-semibold text-white bg-gradient-to-r from-amber-500 to-amber-600 hover:from-amber-400 hover:to-amber-500 shadow-lg shadow-amber-500/25 transition-all"
           >
             Scan My App Free
@@ -316,7 +490,7 @@ export default async function BlogPostPage({ params }: Props) {
         {/* Related posts */}
         {related.length > 0 && (
           <div className="mt-16 pt-10 border-t border-white/5">
-            <h3 className="font-bold text-lg mb-6">Related posts</h3>
+            <h2 className="font-bold text-lg mb-6">Related posts</h2>
             <div className="grid gap-4">
               {related.map((p) => (
                 <Link

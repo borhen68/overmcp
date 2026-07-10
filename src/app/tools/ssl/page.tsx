@@ -2,6 +2,7 @@
 
 import Link from "next/link";
 import { useState } from "react";
+import { SSL_SEO, ToolSeoContent } from "@/components/ToolSeoContent";
 
 interface SSLResult {
   valid: boolean;
@@ -153,6 +154,7 @@ export default function SSLCheckerPage() {
         <div className="mt-12 flex flex-wrap justify-center gap-4 text-sm">
           <Link href="/tools/headers" className="text-gray-400 hover:text-white transition-colors px-4 py-2 rounded-lg border border-white/10 hover:border-white/20">Headers Checker</Link>
           <Link href="/tools/leak" className="text-gray-400 hover:text-white transition-colors px-4 py-2 rounded-lg border border-white/10 hover:border-white/20">Secret Leak Scanner</Link>
+          <Link href="/tools" className="text-gray-400 hover:text-white transition-colors px-4 py-2 rounded-lg border border-white/10 hover:border-white/20">All free tools</Link>
         </div>
 
         <div className="mt-12 text-center card p-8">
@@ -167,6 +169,8 @@ export default function SSLCheckerPage() {
             Run Full Scan &rarr;
           </Link>
         </div>
+
+        <ToolSeoContent config={SSL_SEO} />
       </main>
     </div>
   );

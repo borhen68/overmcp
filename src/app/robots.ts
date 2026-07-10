@@ -8,7 +8,8 @@ export default function robots(): MetadataRoute.Robots {
       {
         userAgent: "*",
         allow: "/",
-        disallow: ["/api/"],
+        // API routes + private/user-specific surfaces should not burn crawl budget.
+        disallow: ["/api/", "/dashboard", "/report/"],
       },
       // OpenAI: training crawler, live-search crawler, and in-chat fetcher
       { userAgent: "GPTBot", allow: "/" },
@@ -28,7 +29,10 @@ export default function robots(): MetadataRoute.Robots {
       { userAgent: "CCBot", allow: "/" },
       // Apple Intelligence
       { userAgent: "Applebot-Extended", allow: "/" },
+      // Bing / Copilot
+      { userAgent: "Bingbot", allow: "/" },
     ],
     sitemap: `${baseUrl}/sitemap.xml`,
+    host: baseUrl,
   };
 }

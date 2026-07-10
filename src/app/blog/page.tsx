@@ -1,20 +1,68 @@
 import Link from "next/link";
-import { getSeoPosts } from "@/lib/blog";
+import { getAllPostsForIndex } from "@/lib/blog";
+import { serializeJsonLd } from "@/lib/json-ld";
 
-export const dynamic = "force-dynamic";
+// Revalidate hourly so Google can crawl a stable, cacheable HTML document
+// while still picking up newly generated posts within an hour.
+export const revalidate = 3600;
 
 export default async function BlogPage() {
-  let posts: Awaited<ReturnType<typeof getSeoPosts>> = [];
+  const baseUrl = process.env.NEXT_PUBLIC_APP_URL || "https://www.overmcp.com";
+  let posts: Awaited<ReturnType<typeof getAllPostsForIndex>> = [];
   try {
-    posts = await getSeoPosts(100);
+    // List every post so crawlers and users can discover the full archive.
+    posts = await getAllPostsForIndex(500);
   } catch {
     posts = [];
   }
+
+  const blogJsonLd = {
+    "@context": "https://schema.org",
+    "@type": "Blog",
+    "@id": `${baseUrl}/blog#blog`,
+    name: "OverMCP Blog — AI App Security",
+    description:
+      "Practical security, SEO, AEO, and GEO guides for developers shipping apps built with AI coding tools.",
+    url: `${baseUrl}/blog`,
+    publisher: {
+      "@type": "Organization",
+      name: "OverMCP",
+      url: baseUrl,
+      logo: { "@type": "ImageObject", url: `${baseUrl}/icon` },
+    },
+    blogPost: posts.slice(0, 50).map((post) => ({
+      "@type": "BlogPosting",
+      headline: post.title,
+      url: `${baseUrl}/blog/${post.slug}`,
+      datePublished: post.publishedAt,
+      description: post.excerpt,
+    })),
+  };
+
+  const itemListJsonLd = {
+    "@context": "https://schema.org",
+    "@type": "ItemList",
+    itemListElement: posts.slice(0, 50).map((post, index) => ({
+      "@type": "ListItem",
+      position: index + 1,
+      url: `${baseUrl}/blog/${post.slug}`,
+      name: post.title,
+    })),
+  };
 
   return (
     <div className="relative min-h-screen bg-grid noise">
       <div className="fixed inset-0 aurora pointer-events-none" />
       <div className="fixed inset-0 spotlight pointer-events-none" />
+
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{ __html: serializeJsonLd(blogJsonLd) }}
+      />
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{ __html: serializeJsonLd(itemListJsonLd) }}
+      />
 
       <header className="sticky top-0 z-50 border-b border-white/5 backdrop-blur-xl bg-[#0c0a09]/70">
         <div className="max-w-5xl mx-auto px-6 h-16 flex items-center justify-between">
@@ -22,8 +70,20 @@ export default async function BlogPage() {
             <span className="text-xl font-bold text-gradient">OverMCP</span>
           </Link>
           <nav className="flex items-center gap-6">
-            <Link href="/" className="text-sm text-gray-400 hover:text-white transition-colors">Scan</Link>
-            <Link href="/blog" className="text-sm text-white font-medium">Blog</Link>
+            <Link href="/" className="text-sm text-gray-400 hover:text-white transition-colors">
+              Scan
+            </Link>
+            <Link href="/blog" className="text-sm text-white font-medium">
+              Blog
+            </Link>
+            <a
+              href="/rss.xml"
+              className="text-sm text-gray-400 hover:text-white transition-colors"
+              rel="alternate"
+              type="application/rss+xml"
+            >
+              RSS
+            </a>
           </nav>
         </div>
       </header>
@@ -34,8 +94,14 @@ export default async function BlogPage() {
             Security for <span className="text-gradient">Vibe Coders</span>
           </h1>
           <p className="text-gray-400 text-lg max-w-2xl mx-auto">
-            Practical security guides for developers who build fast with AI. No gatekeeping — just fixes.
+            Practical security, SEO, AEO, and GEO guides for developers who build fast with AI.
+            No gatekeeping — just fixes.
           </p>
+          {posts.length > 0 && (
+            <p className="text-sm text-gray-600 mt-3">
+              {posts.length} guides · updated daily
+            </p>
+          )}
         </div>
 
         {posts.length === 0 ? (
@@ -63,11 +129,12 @@ export default async function BlogPage() {
                 <h2 className="text-xl font-bold mb-2 group-hover:text-green-400 transition-colors">
                   {post.title}
                 </h2>
-                <p className="text-sm text-gray-400 flex-1 leading-relaxed">
-                  {post.excerpt}
-                </p>
+                <p className="text-sm text-gray-400 flex-1 leading-relaxed">{post.excerpt}</p>
                 <div className="flex items-center justify-between mt-4 pt-4 border-t border-white/5">
-                  <time className="text-xs text-gray-600">
+                  <time
+                    className="text-xs text-gray-600"
+                    dateTime={post.publishedAt}
+                  >
                     {new Date(post.publishedAt).toLocaleDateString("en-US", {
                       month: "short",
                       day: "numeric",

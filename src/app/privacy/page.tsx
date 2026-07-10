@@ -1,9 +1,14 @@
 import type { Metadata } from "next";
 import LegalLayout from "../legal/LegalLayout";
 
+const baseUrl = process.env.NEXT_PUBLIC_APP_URL || "https://www.overmcp.com";
+
 export const metadata: Metadata = {
   title: "Privacy Policy",
-  description: "OverMCP Privacy Policy.",
+  description:
+    "How OverMCP collects, uses, and protects scan data, emails, and payment information handled by Paddle.",
+  alternates: { canonical: `${baseUrl}/privacy` },
+  robots: { index: true, follow: true },
 };
 
 export default function PrivacyPage() {

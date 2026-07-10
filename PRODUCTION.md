@@ -9,7 +9,9 @@
 | `DEEPSEEK_API_KEY` | AI security/SEO analysis + chat | **Yes** |
 | `RESEND_API_KEY` | Transactional + alert emails | Yes (email features) |
 | `NEXT_PUBLIC_APP_URL` | Public base URL (links, OG, webhooks) | **Yes** |
-| `CRON_SECRET` | Protects `/api/monitor/run` cron endpoint | **Yes (monitoring)** |
+| `CRON_SECRET` | Protects `/api/monitor/run` and `/api/blog/generate` cron endpoints | **Yes (monitoring + blog)** |
+| `GOOGLE_SITE_VERIFICATION` | Google Search Console meta tag | Recommended (indexing) |
+| `SEO_KEYWORDS_JSON` | Optional extra blog topic seed list (JSON array) | Optional |
 | `NOWPAYMENTS_API_KEY` | Crypto payments | Payments |
 | `NOWPAYMENTS_IPN_SECRET` | Verifies payment webhook signatures | Payments |
 | `GITHUB_CLIENT_ID` / `GITHUB_CLIENT_SECRET` | GitHub OAuth | GitHub features |
@@ -22,7 +24,9 @@
 
 - [ ] **Database**: `TURSO_DATABASE_URL` points at a live, reachable DB. The dev DB currently returns `404` on writes — fix before launch (monitoring requires real persistence; it cannot fall back to in-memory).
 - [ ] **Email domain**: Verify `overmcp.app` in Resend (SPF/DKIM) or change the `from:` addresses in `src/lib/email.ts`. Emails will bounce until the sending domain is verified.
-- [ ] **`CRON_SECRET` set**: Without it, `/api/monitor/run` is publicly callable. Vercel Cron sends it as `Authorization: Bearer <CRON_SECRET>` automatically.
+- [ ] **`CRON_SECRET` set**: Without it, `/api/monitor/run` and `/api/blog/generate` are publicly callable. Vercel Cron sends it as `Authorization: Bearer <CRON_SECRET>` automatically.
+- [ ] **Blog cron**: fires hourly `06:00–16:00 UTC` (`0 6-16 * * *`) → 11 posts/day, 1 post per run (avoids Vercel function timeouts from stacking 11 DeepSeek calls).
+- [ ] **Google Search Console**: verify domain, submit `https://www.overmcp.com/sitemap.xml`, request indexing for `/` and `/blog`, monitor Coverage/Page indexing.
 - [ ] **`NEXT_PUBLIC_APP_URL`** set to the production domain.
 - [ ] **Payment webhook**: Configure NOWPayments IPN callback to `${NEXT_PUBLIC_APP_URL}/api/payment/webhook` and set `NOWPAYMENTS_IPN_SECRET`.
 - [ ] **Run** `npm run build` and `npx tsc --noEmit` clean.

@@ -86,6 +86,11 @@ export async function getAllPosts(limit = 50): Promise<BlogPost[]> {
   return result.rows.map(rowToPost);
 }
 
+/** Every published post for sitemap/indexing — never topic-deduped. */
+export async function getAllPostsForIndex(limit = 10_000): Promise<BlogPost[]> {
+  return getAllPosts(limit);
+}
+
 const SEO_TOPIC_STOP_WORDS = new Set([
   "a",
   "an",
@@ -172,6 +177,44 @@ export async function getSeoPosts(limit = 50): Promise<BlogPost[]> {
   }
 
   return unique;
+}
+
+/** Rank related posts by tag + title token overlap (for internal linking). */
+export async function getRelatedPosts(
+  post: Pick<BlogPost, "slug" | "title" | "tags">,
+  limit = 4
+): Promise<BlogPost[]> {
+  const pool = await getAllPosts(200);
+  const selfTokens = seoTopicTokens(post);
+  const tagSet = new Set(post.tags.map((t) => t.toLowerCase()));
+
+  const scored = pool
+    .filter((p) => p.slug !== post.slug)
+    .map((p) => {
+      const otherTokens = seoTopicTokens(p);
+      let score = 0;
+      for (const t of otherTokens) {
+        if (selfTokens.has(t)) score += 2;
+      }
+      for (const tag of p.tags) {
+        if (tagSet.has(tag.toLowerCase())) score += 3;
+      }
+      return { post: p, score };
+    })
+    .filter((x) => x.score > 0)
+    .sort((a, b) => b.score - a.score || b.post.publishedAt.localeCompare(a.post.publishedAt));
+
+  const related = scored.slice(0, limit).map((x) => x.post);
+  if (related.length >= limit) return related;
+
+  // Fill with recent unique posts so every article has internal links.
+  for (const p of pool) {
+    if (p.slug === post.slug) continue;
+    if (related.some((r) => r.slug === p.slug)) continue;
+    related.push(p);
+    if (related.length >= limit) break;
+  }
+  return related;
 }
 
 export async function getPostBySlug(slug: string): Promise<BlogPost | null> {
@@ -690,21 +733,45 @@ Unique angle to use: ${suggestedTopic.angle || "Give a practical, developer-firs
   ]);
   if (!content) return null;
 
-  const post = JSON.parse(content);
+  let post: {
+    title?: unknown;
+    slug?: unknown;
+    excerpt?: unknown;
+    content?: unknown;
+    tags?: unknown;
+    metaTitle?: unknown;
+    metaDescription?: unknown;
+  };
+  try {
+    post = JSON.parse(content);
+  } catch {
+    throw new Error("DeepSeek returned invalid JSON for blog post");
+  }
+  if (!post.content || !post.title) {
+    throw new Error("DeepSeek blog JSON missing title or content");
+  }
+
   const id = crypto.randomUUID();
   const now = new Date().toISOString();
-  const slug = sanitizeSlug(post.slug || post.title);
+  let slug = sanitizeSlug(post.slug || post.title);
   if (!slug) return null;
+
+  // On collision, suffix with a short unique id instead of dropping the post.
+  // Silent null returns were a major reason the daily cron appeared "broken".
   const existingSlug = await db.execute({
     sql: `SELECT 1 FROM blog_posts WHERE slug = ? LIMIT 1`,
     args: [slug],
   });
-  if (existingSlug.rows.length > 0) return null;
+  if (existingSlug.rows.length > 0) {
+    slug = sanitizeSlug(`${slug}-${id.slice(0, 8)}`);
+    if (!slug) return null;
+  }
 
   const title = truncateMeta(post.title, 80);
   const excerpt = truncateMeta(post.excerpt, 220);
   const metaTitle = truncateMeta(post.metaTitle || post.title, 60);
   const metaDescription = truncateMeta(post.metaDescription || post.excerpt, 155);
+  const body = String(post.content);
   const tags = Array.isArray(post.tags)
     ? post.tags.map((tag: unknown) => String(tag).trim()).filter(Boolean).slice(0, 5)
     : [];
@@ -717,7 +784,7 @@ Unique angle to use: ${suggestedTopic.angle || "Give a practical, developer-firs
       slug,
       title,
       excerpt,
-      post.content,
+      body,
       JSON.stringify(tags),
       metaTitle,
       metaDescription,
@@ -731,7 +798,7 @@ Unique angle to use: ${suggestedTopic.angle || "Give a practical, developer-firs
     slug,
     title,
     excerpt,
-    content: post.content,
+    content: body,
     coverImage: null,
     tags,
     metaTitle,

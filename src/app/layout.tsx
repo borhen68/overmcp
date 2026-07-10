@@ -8,6 +8,7 @@ const inter = Inter({
   variable: "--font-body",
   subsets: ["latin"],
   weight: ["300", "400", "500", "600", "700"],
+  display: "swap",
 });
 
 const instrumentSerif = Instrument_Serif({
@@ -15,12 +16,14 @@ const instrumentSerif = Instrument_Serif({
   subsets: ["latin"],
   weight: ["400"],
   style: ["normal", "italic"],
+  display: "swap",
 });
 
 const jetbrainsMono = JetBrains_Mono({
   variable: "--font-mono",
   subsets: ["latin"],
   weight: ["400", "500", "600", "700"],
+  display: "swap",
 });
 
 const baseUrl = process.env.NEXT_PUBLIC_APP_URL || "https://www.overmcp.com";
@@ -77,6 +80,9 @@ export const metadata: Metadata = {
   metadataBase: new URL(baseUrl),
   alternates: {
     canonical: baseUrl,
+    types: {
+      "application/rss+xml": `${baseUrl}/rss.xml`,
+    },
   },
   openGraph: {
     title: "OverMCP — AI App Security Scanner for Vibe-Coded Apps",
@@ -281,7 +287,7 @@ export default function RootLayout({
                   name: "What payment methods are accepted?",
                   acceptedAnswer: {
                     "@type": "Answer",
-                    text: "OverMCP accepts crypto payments including Bitcoin, Ethereum, USDT, and many other cryptocurrencies. This keeps checkout accessible globally without requiring a credit card.",
+                    text: "OverMCP accepts cards, Apple Pay, Google Pay, and PayPal via Paddle. Checkout is handled securely by Paddle — OverMCP never stores card details.",
                   },
                 },
                 {

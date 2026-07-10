@@ -17,13 +17,36 @@ export const metadata: Metadata = {
     "answer engine optimization",
     "generative engine optimization",
   ],
-  alternates: { canonical: `${baseUrl}/blog` },
+  alternates: {
+    canonical: `${baseUrl}/blog`,
+    types: {
+      "application/rss+xml": `${baseUrl}/rss.xml`,
+    },
+  },
   openGraph: {
     title: "OverMCP Blog — AI App Security, SEO, AEO & GEO",
     description:
       "Practical security and AI-search visibility guides for developers shipping fast with AI coding tools.",
     url: `${baseUrl}/blog`,
     type: "website",
+    siteName: "OverMCP",
+    locale: "en_US",
+  },
+  twitter: {
+    card: "summary_large_image",
+    title: "OverMCP Blog — AI App Security, SEO, AEO & GEO",
+    description:
+      "Practical security and AI-search visibility guides for vibe-coded apps.",
+  },
+  robots: {
+    index: true,
+    follow: true,
+    googleBot: {
+      index: true,
+      follow: true,
+      "max-image-preview": "large",
+      "max-snippet": -1,
+    },
   },
 };
 

@@ -1,9 +1,13 @@
 import type { Metadata } from "next";
 import LegalLayout from "../legal/LegalLayout";
 
+const baseUrl = process.env.NEXT_PUBLIC_APP_URL || "https://www.overmcp.com";
+
 export const metadata: Metadata = {
   title: "Terms of Service",
-  description: "OverMCP Terms of Service.",
+  description: "Terms governing use of the OverMCP AI app security scanner and related tools.",
+  alternates: { canonical: `${baseUrl}/terms` },
+  robots: { index: true, follow: true },
 };
 
 export default function TermsPage() {
